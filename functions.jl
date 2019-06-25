@@ -141,7 +141,7 @@ end
     data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
 
 """
-function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String, format::String="CSV")
     # make a separate directory for each province
     for i in 1:length(province)
         try
@@ -169,8 +169,13 @@ function data_download(province::Array{String}, output_dir::String, url::String,
         input_d = "$(output_dir)/temp_data/$(file_basename)_$(province[i])"
         output_d = "$(output_dir)/$(province[i])"
 
-        txt2csv(input_d, output_d)
-
+        if format == "CSV"
+            txt2csv(input_d, output_d)
+        elseif format == "NetCDF"
+            txt2netcdf(input_d, output_d)
+        else
+            throw(error("Format is not valid"))
+        end
         # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
         #run(`rmdir -r $(input_d)`)  # delete the original data directory
         #run(`rm $(file)`)   # delete the zip file
