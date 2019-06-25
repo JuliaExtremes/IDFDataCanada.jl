@@ -18,7 +18,7 @@ function get_idf(fileName::String)
     stripChar = (s, r) -> replace(s, Regex("[$r]") => "")    # to remove ' from lat/lon
     LatDMS1 = parse(Int, stripChar(temp[12:14],"'"))
     LatDMS2 = (parse(Int, stripChar(temp[15:17],"'")))/60
-    lat = parse(Float32, (string(LatDMS1)*"."*string(LatDMS2)[3:end]))  # Lat (DMS)
+    lat = round(parse(Float32, (string(LatDMS1)*"."*string(LatDMS2)[3:end])), digits=2)  # Lat (DMS)
 
     LonDMS1 = parse(Int, stripChar(temp[34:37],"'"))
     if LonDMS1 > 99  # character count change from 99 to 100 (+1)
@@ -26,7 +26,7 @@ function get_idf(fileName::String)
     else
         LonDMS2 = (parse(Int, stripChar(temp[37:39],"'")))/60
     end
-    lon = parse(Float32, (string(LonDMS1)*"."*string(LonDMS2)[3:end]))  # Lon (DMS)
+    lon = round(parse(Float32, (string(LonDMS1)*"."*string(LonDMS2)[3:end])), digits=2)  # Lon (DMS)
 
     altitude = parse(Float32, temp[65:69])   # Altitude (m)
 
