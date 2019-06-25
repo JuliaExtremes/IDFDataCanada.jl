@@ -1,7 +1,7 @@
 using DataFrames, Dates, Glob, NCDatasets, CSV
 
 """
-get_idf(fileName::String)
+    get_idf(fileName::String)
 
 """
 function get_idf(fileName::String)
@@ -71,7 +71,7 @@ end
 
 
 """
-txt2csv(input_dir::String, output_dir::String)
+    txt2csv(input_dir::String, output_dir::String)
 
 """
 function txt2csv(input_dir::String, output_dir::String)
@@ -82,14 +82,63 @@ function txt2csv(input_dir::String, output_dir::String)
         fileName = files[i]
         StationID, lat, lon, altitude, data, StationName = get_idf(fileName)
         output = "$(output_dir)/$(StationID).csv"
-        CSV.write(output, data)
-        println("$(basename(output)) : OK")
+        CSV.write(output_f, data)
+        println("$(basename(output_f)) : OK")
+    end
+end
+
+"""
+    txt2netcdf(input_dir::String, output_dir::String)
+
+"""
+function txt2netcdf(input_dir::String, output_dir::String)
+    files = glob("*.txt", input_dir)
+    nbStations = size(files,1)
+
+    for i in 1:nbStations
+        fileName = files[i]
+        StationID, lat, lon, altitude, data, StationName = get_idf(fileName)
+
+        output_f = "$(output_dir)/$(StationID).nc"
+        netcdf_generator(output_f)
+
+        ds = Dataset(output_f, "a")
+
+        ds.attrib["original_source"] = basename(fileName)
+
+        ds["lat"][1] = lat
+        ds["lon"][1] = lon
+        ds["alt"][1] = altitude
+        ds["station_ID"][1, 1:length(StationID)] = collect(StationID)
+        ds["station_name"][1, 1:length(StationName)] = collect(StationName)
+
+        nbObs = size(data,1)
+        ds["row_size"][1] = nbObs
+
+        data[1] = Dates.DateTime.(parse.(Int, data[1])) # Conversion des années en dates
+        units = "days since 2000-01-01 00:00:00"
+        timeData = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")
+        ds["time"][1:nbObs] = timeData
+
+        ds["max_rainfall_amount_5min"][1:nbObs] = parse.(Float32, coalesce.(data[2], "NaN"))
+        ds["max_rainfall_amount_10min"][1:nbObs] = parse.(Float32, coalesce.(data[3], "NaN"))
+        ds["max_rainfall_amount_15min"][1:nbObs] = parse.(Float32, coalesce.(data[4], "NaN"))
+        ds["max_rainfall_amount_30min"][1:nbObs] = parse.(Float32, coalesce.(data[5], "NaN"))
+        ds["max_rainfall_amount_1h"][1:nbObs] = parse.(Float32, coalesce.(data[6], "NaN"))
+        ds["max_rainfall_amount_2h"][1:nbObs] = parse.(Float32, coalesce.(data[7], "NaN"))
+        ds["max_rainfall_amount_6h"][1:nbObs] = parse.(Float32, coalesce.(data[8], "NaN"))
+        ds["max_rainfall_amount_12h"][1:nbObs] = parse.(Float32, coalesce.(data[9], "NaN"))
+        ds["max_rainfall_amount_24h"][1:nbObs] = parse.(Float32, coalesce.(data[10], "NaN"))
+
+        close(ds)
+
+    println("$(basename(output_f)) : OK")
     end
 end
 
 
 """
-data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+    data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
 
 """
 function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
@@ -130,7 +179,7 @@ function data_download(province::Array{String}, output_dir::String, url::String,
 end
 
 """
-netcdf_generator(fileName::String)
+    netcdf_generator(fileName::String)
 
 """
 function netcdf_generator(fileName::String)
