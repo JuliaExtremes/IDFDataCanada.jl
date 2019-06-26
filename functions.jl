@@ -163,8 +163,12 @@ function data_download(province::Array{String}, output_dir::String, url::String,
         file = "$(file_basename)_$(province[i]).zip"
         full_url = "$(url)$(file)"
 
-        run(`wget $(full_url)`)   # get the data from server
-        run(`unzip $(file)`)   # unzip the data
+        try
+            run(`unzip $(file)`)   # unzip the data
+        catch
+            run(`wget $(full_url)`)   # get the data from server
+            run(`unzip $(file)`)   # unzip the data
+        end
 
         input_d = "$(output_dir)/temp_data/$(file_basename)_$(province[i])"
         output_d = "$(output_dir)/$(province[i])"
