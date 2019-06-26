@@ -26,7 +26,7 @@ function get_idf(fileName::String)
     else
         LonDMS2 = (parse(Int, stripChar(temp[37:39],"'")))/60
     end
-    lon = round(parse(Float32, (string(LonDMS1)*"."*string(LonDMS2)[3:end])), digits=2)  # Lon (DMS)
+    lon = round(parse(Float32, ("-"*string(LonDMS1)*"."*string(LonDMS2)[3:end])), digits=2)  # Lon (DMS)
 
     altitude = parse(Float32, temp[65:69])   # Altitude (m)
 
