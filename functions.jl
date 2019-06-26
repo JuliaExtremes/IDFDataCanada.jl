@@ -138,17 +138,14 @@ end
 
 
 """
-    data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+    data_download(province::String, output_dir::String, url::String, file_basename::String)
 
 """
-function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String, format::String="CSV")
-    # make a separate directory for each province
-    for i in 1:length(province)
-        try
-            mkdir("$(output_dir)/$(province[i])")
-        catch
-            #do nothing
-        end
+function data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
+    try
+        mkdir("$(output_dir)/$(province)")
+    catch
+        nothing
     end
 
     # make a temp directory for all data
@@ -159,31 +156,31 @@ function data_download(province::Array{String}, output_dir::String, url::String,
         cd("$(output_dir)/temp_data")
     end
 
-    for i in 1:length(province)
-        file = "$(file_basename)_$(province[i]).zip"
-        full_url = "$(url)$(file)"
+    file = "$(file_basename)_$(province).zip"
+    full_url = "$(url)$(file)"
 
-        try
-            run(`unzip $(file)`)   # unzip the data
-        catch
-            run(`wget $(full_url)`)   # get the data from server
-            run(`unzip $(file)`)   # unzip the data
-        end
-
-        input_d = "$(output_dir)/temp_data/$(file_basename)_$(province[i])"
-        output_d = "$(output_dir)/$(province[i])"
-
-        if format == "CSV"
-            txt2csv(input_d, output_d)
-        elseif format == "NetCDF"
-            txt2netcdf(input_d, output_d)
-        else
-            throw(error("Format is not valid"))
-        end
-        # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
-        #run(`rmdir -r $(input_d)`)  # delete the original data directory
-        #run(`rm $(file)`)   # delete the zip file
+    try
+        run(`unzip $(file)`)   # unzip the data
+    catch
+        run(`wget $(full_url)`)   # get the data from server
+        run(`unzip $(file)`)   # unzip the data
     end
+
+    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)"
+    output_d = "$(output_dir)/$(province)"
+
+    if format == "CSV"
+        txt2csv(input_d, output_d)
+    elseif format == "NetCDF"
+        txt2netcdf(input_d, output_d)
+    else
+        throw(error("Format is not valid"))
+    end
+
+    # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
+    #run(`rmdir -r $(input_d)`)  # delete the original data directory
+    #run(`rm $(file)`)   # delete the zip file
+    
     return nothing
 end
 
