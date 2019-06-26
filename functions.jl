@@ -295,3 +295,20 @@ function netcdf_generator(fileName::String)
 
     close(ds)
 end
+
+function plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
+    # Empty-map generator
+    status, fig, ax, m = mapclimgrid(region=reg)
+
+    # Plot station
+    x, y = m(C.lon, C.lat)
+    m.plot(x, y, "r+", markersize=msize)
+
+    # Title
+    ClimateTools.title(titlestr)
+
+    # Save to "filename" if not empty
+    if !isempty(filename)
+        PyPlot.savefig(filename, dpi=300)
+    end
+end
