@@ -180,8 +180,18 @@ function data_download(province::String, output_dir::String, url::String, file_b
     # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
     #run(`rmdir -r $(input_d)`)  # delete the original data directory
     #run(`rm $(file)`)   # delete the zip file
-    
+
     return nothing
+end
+
+"""
+    data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+
+"""
+function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String, format::String="CSV")
+    for i in 1:length(province)
+        data_dowload(province[i], output_dir, url, file_basename, format)
+    end
 end
 
 """
