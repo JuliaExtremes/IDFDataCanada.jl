@@ -1,4 +1,4 @@
-using DataFrames, Dates, Glob, NCDatasets, CSV
+using ClimateTools, DataFrames, Dates, Glob, NCDatasets, CSV
 
 """
     get_idf(fileName::String)
@@ -74,17 +74,37 @@ end
     txt2csv(input_dir::String, output_dir::String)
 
 """
-function txt2csv(input_dir::String, output_dir::String)
+function txt2csv(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
     nbStations = size(files,1)
+
+    # CSV info file
+    info_df = DataFrame(A = String[],
+    B = String[],
+    C = String[],
+    D = String[],
+    E = String[],
+    F = String[],
+    G = String[],
+    H = String[],
+    I = String[])
+
+    colnames = ["Nom", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
+    names!(info_df, Symbol.(colnames))
 
     for i in 1:nbStations
         fileName = files[i]
         StationID, lat, lon, altitude, data, StationName = get_idf(fileName)
-        output = "$(output_dir)/$(StationID).csv"
+        output_f = "$(output_dir)/$(StationID).csv"
         CSV.write(output_f, data)
         println("$(basename(output_f)) : OK")
+
+        nbYears = size(info_df, 1)
+        info = [StationName, province, StationID, string(lat), string(lon), string(altitude), string(nbYears), string(StationID, ".csv"), basename(fileName)]
+        push!(info_df, info)
     end
+    output_info = "$(output_dir)/info_stations_$(province).csv"
+    CSV.write(output_info, info_df)
 end
 
 """
@@ -170,7 +190,7 @@ function data_download(province::String, output_dir::String, url::String, file_b
     output_d = "$(output_dir)/$(province)"
 
     if format == "CSV"
-        txt2csv(input_d, output_d)
+        txt2csv(input_d, output_d, province)
     elseif format == "NetCDF"
         txt2netcdf(input_d, output_d)
     else
