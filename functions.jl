@@ -10,37 +10,37 @@ function get_idf(fileName::String)
 
     # Station name and ID
     temp = doc[14]
-    StationID = string(strip(temp[60:end]))   # Station ID
-    StationName = string(strip(temp[1:50]))   # Station Name
+    stationid = string(strip(temp[60:end]))   # Station ID
+    stationname = string(strip(temp[1:50]))   # Station Name
 
     # Lat, lon and altitude
     temp = doc[16]
-    stripChar = (s, r) -> replace(s, Regex("[$r]") => "")    # to remove ' from lat/lon
-    LatDMS1 = parse(Int, stripChar(temp[12:14],"'"))
-    LatDMS2 = (parse(Int, stripChar(temp[15:17],"'")))/60
-    lat = round(parse(Float32, (string(LatDMS1)*"."*string(LatDMS2)[3:end])), digits=2)  # Lat (DMS)
+    stripchar = (s, r) -> replace(s, Regex("[$r]") => "")    # to remove ' from lat/lon
+    latDMS1 = parse(Int, stripchar(temp[12:14],"'"))
+    latDMS2 = (parse(Int, stripchar(temp[15:17],"'")))/60
+    lat = round(parse(Float32, (string(latDMS1)*"."*string(latDMS2)[3:end])), digits=2)  # Lat (DMS)
 
-    LonDMS1 = parse(Int, stripChar(temp[34:37],"'"))
-    if LonDMS1 > 99  # character count change from 99 to 100 (+1)
-        LonDMS2 = (parse(Int, stripChar(temp[38:40],"'")))/60
+    lonDMS1 = parse(Int, stripchar(temp[34:37],"'"))
+    if lonDMS1 > 99  # character count change from 99 to 100 (+1)
+        lonDMS2 = (parse(Int, stripchar(temp[38:40],"'")))/60
     else
-        LonDMS2 = (parse(Int, stripChar(temp[37:39],"'")))/60
+        lonDMS2 = (parse(Int, stripchar(temp[37:39],"'")))/60
     end
-    lon = round(parse(Float32, ("-"*string(LonDMS1)*"."*string(LonDMS2)[3:end])), digits=2)  # Lon (DMS)
+    lon = round(parse(Float32, ("-"*string(lonDMS1)*"."*string(lonDMS2)[3:end])), digits=2)  # Lon (DMS)
 
     altitude = parse(Float32, temp[65:69])   # Altitude (m)
 
     # Nb of years
-    indicateur1 = "---------------------------------------------------------------------"
+    indicateur = "---------------------------------------------------------------------"
     for i = 1:length(doc)
-        if isequal(strip(doc[i]), indicateur1)
-            global nbYears = i-30
+        if isequal(strip(doc[i]), indicateur)
+            global nbyears = i-30
         end
     end
 
-    # Data from Table 1
-    table1 = doc[30:30+nbYears-1]
-    df = DataFrame(A = String[],
+    # Data from Table 1 : Annual Maximum (mm)/Maximum annuel (mm)
+    table1 = doc[30:30+nbyears-1]
+    data_df = DataFrame(A = String[],
     B = String[],
     C = String[],
     D = String[],
@@ -52,21 +52,21 @@ function get_idf(fileName::String)
     J = String[])
     for j in 1:length(table1)
         data = split(table1[j])
-        push!(df, data)
+        push!(data_df, data)
     end
     colnames = ["Year","5 min","10 min","15 min","30 min","1 h","2 h","6 h","12 h","24 h"]
-    names!(df, Symbol.(colnames))
+    names!(data_df, Symbol.(colnames))
 
     # Function to replace -99.9 by missing
     val2missing(v,mv) = mv == v ? missing : v
     for a in 1:10
-        df[a] = val2missing.(df[a],"-99.9")
+        data_df[a] = val2missing.(data_df[a],"-99.9")
     end
 
     close(f)
-    println(StationName)
+    println(stationname)
 
-    return StationID, lat, lon, altitude, df, StationName
+    return stationid, lat, lon, altitude, data_df, stationname
 end
 
 
@@ -76,7 +76,7 @@ end
 """
 function txt2csv(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
-    nbStations = size(files,1)
+    nbstations = size(files,1)
 
     # CSV info file
     info_df = DataFrame(A = String[],
@@ -92,15 +92,15 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     colnames = ["Nom", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
     names!(info_df, Symbol.(colnames))
 
-    for i in 1:nbStations
-        fileName = files[i]
-        StationID, lat, lon, altitude, data, StationName = get_idf(fileName)
-        output_f = "$(output_dir)/$(StationID).csv"
+    for i in 1:nbstations
+        filename = files[i]
+        stationid, lat, lon, altitude, data, stationname = get_idf(filename)
+        output_f = "$(output_dir)/$(stationid).csv"
         CSV.write(output_f, data)
         println("$(basename(output_f)) : OK")
 
-        nbYears = size(info_df, 1)
-        info = [StationName, province, StationID, string(lat), string(lon), string(altitude), string(nbYears), string(StationID, ".csv"), basename(fileName)]
+        nbyears = size(info_df, 1)
+        info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
         push!(info_df, info)
     end
     output_info = "$(output_dir)/info_stations_$(province).csv"
@@ -113,42 +113,42 @@ end
 """
 function txt2netcdf(input_dir::String, output_dir::String)
     files = glob("*.txt", input_dir)
-    nbStations = size(files,1)
+    nbstations = size(files,1)
 
-    for i in 1:nbStations
+    for i in 1:nbstations
         fileName = files[i]
-        StationID, lat, lon, altitude, data, StationName = get_idf(fileName)
+        stationid, lat, lon, altitude, data, stationname = get_idf(filename)
 
-        output_f = "$(output_dir)/$(StationID).nc"
+        output_f = "$(output_dir)/$(stationid).nc"
         netcdf_generator(output_f)
 
         ds = Dataset(output_f, "a")
 
-        ds.attrib["original_source"] = basename(fileName)
+        ds.attrib["original_source"] = basename(filename)
 
         ds["lat"][1] = lat
         ds["lon"][1] = lon
         ds["alt"][1] = altitude
-        ds["station_ID"][1, 1:length(StationID)] = collect(StationID)
-        ds["station_name"][1, 1:length(StationName)] = collect(StationName)
+        ds["station_ID"][1, 1:length(stationid)] = collect(stationid)
+        ds["station_name"][1, 1:length(stationname)] = collect(stationname)
 
-        nbObs = size(data,1)
-        ds["row_size"][1] = nbObs
+        nb_obs = size(data,1)
+        ds["row_size"][1] = nb_obs
 
         data[1] = Dates.DateTime.(parse.(Int, data[1])) # Conversion des années en dates
         units = "days since 2000-01-01 00:00:00"
-        timeData = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")
-        ds["time"][1:nbObs] = timeData
+        timedata = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")
+        ds["time"][1:nb_obs] = timedata
 
-        ds["max_rainfall_amount_5min"][1:nbObs] = parse.(Float32, coalesce.(data[2], "NaN"))
-        ds["max_rainfall_amount_10min"][1:nbObs] = parse.(Float32, coalesce.(data[3], "NaN"))
-        ds["max_rainfall_amount_15min"][1:nbObs] = parse.(Float32, coalesce.(data[4], "NaN"))
-        ds["max_rainfall_amount_30min"][1:nbObs] = parse.(Float32, coalesce.(data[5], "NaN"))
-        ds["max_rainfall_amount_1h"][1:nbObs] = parse.(Float32, coalesce.(data[6], "NaN"))
-        ds["max_rainfall_amount_2h"][1:nbObs] = parse.(Float32, coalesce.(data[7], "NaN"))
-        ds["max_rainfall_amount_6h"][1:nbObs] = parse.(Float32, coalesce.(data[8], "NaN"))
-        ds["max_rainfall_amount_12h"][1:nbObs] = parse.(Float32, coalesce.(data[9], "NaN"))
-        ds["max_rainfall_amount_24h"][1:nbObs] = parse.(Float32, coalesce.(data[10], "NaN"))
+        ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[2], "NaN"))
+        ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[3], "NaN"))
+        ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[4], "NaN"))
+        ds["max_rainfall_amount_30min"][1:nb_obs] = parse.(Float32, coalesce.(data[5], "NaN"))
+        ds["max_rainfall_amount_1h"][1:nb_obs] = parse.(Float32, coalesce.(data[6], "NaN"))
+        ds["max_rainfall_amount_2h"][1:nb_obs] = parse.(Float32, coalesce.(data[7], "NaN"))
+        ds["max_rainfall_amount_6h"][1:nb_obs] = parse.(Float32, coalesce.(data[8], "NaN"))
+        ds["max_rainfall_amount_12h"][1:nb_obs] = parse.(Float32, coalesce.(data[9], "NaN"))
+        ds["max_rainfall_amount_24h"][1:nb_obs] = parse.(Float32, coalesce.(data[10], "NaN"))
 
         close(ds)
 
