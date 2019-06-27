@@ -3,6 +3,9 @@ using ClimateTools, DataFrames, Dates, Glob, NCDatasets, CSV
 """
     get_idf(fileName::String)
 
+This function reads ECCC IDF text files and returns station infos (ID, latitude, longitude,
+    altitude, and station name) and a DataFrame containing observed annual maximum in mm
+    (Table 1) for different durations.
 """
 function get_idf(fileName::String)
     f = open(fileName, "r")
@@ -73,6 +76,9 @@ end
 """
     txt2csv(input_dir::String, output_dir::String)
 
+This function returns CSV files of observed annual maximum for each station
+    and one CSV file containing all station info (name, province, ID, lat, lon, elevation,
+    number of years, data CSV filenames, original filenames) for a province.
 """
 function txt2csv(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
@@ -89,7 +95,7 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     H = String[],
     I = String[])
 
-    colnames = ["Nom", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
+    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
     names!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
@@ -110,6 +116,8 @@ end
 """
     txt2netcdf(input_dir::String, output_dir::String)
 
+This function returns netCDF files containing observed annual maximum data
+    and station info for each station of a province.
 """
 function txt2netcdf(input_dir::String, output_dir::String)
     files = glob("*.txt", input_dir)
@@ -158,8 +166,10 @@ end
 
 
 """
-    data_download(province::String, output_dir::String, url::String, file_basename::String)
+    data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
 
+This function downloads IDF data from ECCC client_climate server for a province
+    and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
     try
@@ -207,6 +217,8 @@ end
 """
     data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
 
+This function downloads IDF data from ECCC client_climate server for multiple provinces
+    and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String, format::String="CSV")
     for i in 1:length(province)
@@ -217,6 +229,7 @@ end
 """
     netcdf_generator(fileName::String)
 
+This functions generates empty netCDF files (used by txt2csv).
 """
 function netcdf_generator(fileName::String)
     ds = Dataset(fileName,"c")
@@ -323,6 +336,11 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
+"""
+    plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
+
+This function plots a weather station on a map.
+"""
 function plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
     # Empty-map generator
     status, fig, ax, m = mapclimgrid(region=reg)
@@ -340,6 +358,11 @@ function plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String=
     end
 end
 
+"""
+    function plotstation(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
+
+This function plots multiple weather station on a map.
+"""
 function plotstation(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
     # Empty-map generator
     status, fig, ax, m = mapclimgrid(region=reg)
