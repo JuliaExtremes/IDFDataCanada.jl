@@ -16,3 +16,11 @@ A set of methods to get ECCC IDF data from .txt files
 
 * unzip
 * wget
+
+## Getting started
+
+### Extract data
+
+### Mapping
+
+![Example map](/images/nbobs_max_rainfall_amount_24h_qc.png)
