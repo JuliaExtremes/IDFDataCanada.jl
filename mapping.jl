@@ -1,6 +1,32 @@
 using ClimateTools, Glob
 #ClimateTools.PyPlot.pygui(true)
 
+function plotstation_data(W::WeatherNetwork{<:Any}, data; reg="canada", N=12, titlestr::String="", filename::String="")
+      vmin, vmax = ClimateTools.getcslimits([], data, false)
+      vmin2 = round(Int, vmin[1]/10)*10
+      vmax2 = round(Int, vmax[1]/10)*10
+      range_data = vmax2-vmin2
+      while (range_data/N)%1 != 0 || (range_data/N)%.5 != 0
+            N += 1
+      end
+      steps=range_data/N
+
+      cm = "viridis_r"
+      cmap = ClimateTools.mpl.cm.get_cmap(cm, N)
+      status, fig, ax, m2 = mapclimgrid(region=reg)
+
+      lon, lat = ClimateTools.getnetworkcoords(W)
+      x, y = m2(lon, lat)
+      bounds = collect(vmin2:steps:vmax2)
+      norm = ClimateTools.mpl.colors.BoundaryNorm(bounds, cmap.N)
+      cs = m2.scatter(x, y, c=data, cmap=cmap, vmin=vmin2, vmax=vmax2)
+      cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=W[1].dataunits, norm=norm, ticks=bounds)
+
+      ClimateTools.title(titlestr)
+      ClimateTools.PyPlot.savefig(filename, dpi=300)
+      return true, fig, ax, cbar
+end
+
 data_dir = "/Users/houton199/Documents/Stage_2019/data/QC"
 files = glob("*.nc", data_dir)
 
@@ -26,15 +52,9 @@ for i=1:length(A)
       mm = mean(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m2 = mapclimgrid(region="quebec")
-x, y = m2(lon, lat)
-cs = m2.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=A[1].dataunits)
 titlestr = "Mean $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/mean_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/mean_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
 
 #-----------------------------------------------------------------------------------------
 # Maximum
@@ -43,15 +63,9 @@ for i=1:length(A)
       mm = maximum(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m3 = mapclimgrid(region="quebec")
-x, y = m3(lon, lat)
-cs = m3.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=A[1].dataunits)
 titlestr = "Maximum $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/max_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/max_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
 
 #-----------------------------------------------------------------------------------------
 # Minimum
@@ -60,15 +74,9 @@ for i=1:length(A)
       mm = minimum(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m4 = mapclimgrid(region="quebec")
-x, y = m4(lon, lat)
-cs = m4.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=A[1].dataunits)
 titlestr = "Minimum $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/min_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/min_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
 
 #-----------------------------------------------------------------------------------------
 # Std dev
@@ -77,15 +85,9 @@ for i=1:length(A)
       mm = std(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m5 = mapclimgrid(region="quebec")
-x, y = m5(lon, lat)
-cs = m5.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=A[1].dataunits)
 titlestr = "Standard deviation $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/std_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/std_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
 
 #-----------------------------------------------------------------------------------------
 # Variance
@@ -94,15 +96,9 @@ for i=1:length(A)
       mm = var(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m6 = mapclimgrid(region="quebec")
-x, y = m6(lon, lat)
-cs = m6.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=A[1].dataunits)
 titlestr = "Variance $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/var_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/var_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
 
 #-----------------------------------------------------------------------------------------
 # Number of obs
@@ -111,12 +107,6 @@ for i=1:length(A)
       mm = length(A[i])
       push!(data, mm)
 end
-cm = "viridis_r"
-cmap = ClimateTools.mpl.cm.get_cmap(cm)
-status, fig, ax, m7 = mapclimgrid(region="quebec")
-x, y = m7(lon, lat)
-cs = m7.scatter(x, y, c=data, cmap=cmap)
-cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label="Number of observations [years]")
 titlestr = "Number of observation per station\n $(title) QC"
-ClimateTools.title(titlestr)
-ClimateTools.PyPlot.savefig("/Users/houton199/Documents/Stage_2019/maps/nbobs_$(vari)_qc.png", dpi=300)
+filename = "/Users/houton199/Documents/Stage_2019/maps/nbobs_$(vari)_qc.png"
+plotstation_data(A, data, titlestr=titlestr, filename=filename, N=8, reg="quebec")
