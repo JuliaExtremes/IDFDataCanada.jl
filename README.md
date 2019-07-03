@@ -20,7 +20,7 @@ A set of methods to get ECCC IDF data from .txt files
 ## Getting started
 
 Be sure to add the module to your path before using it :
-````julia
+```julia
 push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
 using IDF
 ```
