@@ -201,7 +201,7 @@ function data_download(province::String, output_dir::String, url::String, file_b
 
     if format == "CSV"
         txt2csv(input_d, output_d, province)
-    elseif format == "NetCDF"
+    elseif format == "netCDF"
         txt2netcdf(input_d, output_d)
     else
         throw(error("Format is not valid"))
@@ -380,8 +380,6 @@ function plotstation(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::
         PyPlot.savefig(filename, dpi=300)
     end
 end
-
-
 
 function plotstation_data(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
     # Empty-map generator
