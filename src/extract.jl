@@ -38,7 +38,7 @@ end
 println("The IDF data for $province will be downloaded to $output_dir in $format format.")
 confirmation = input("Please type OK to continue")
 if confirmation == "OK"
-      data_download(province, output_dir, url, file_basename, format)
+      data_download(province, output_dir, format, url=url, file_basename=file_basename)
 else
       println("Download aborted!")
       return nothing

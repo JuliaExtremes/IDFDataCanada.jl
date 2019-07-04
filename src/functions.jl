@@ -171,7 +171,7 @@ end
 This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
+function data_download(province::String, output_dir::String, format::String="CSV"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
     try
         mkdir("$(output_dir)/$(province)")
     catch
@@ -220,7 +220,7 @@ end
 This function downloads IDF data from ECCC client_climate server for multiple provinces
     and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::Array{String}, output_dir::String, url::String, file_basename::String, format::String="CSV")
+function data_download(province::Array{String}, output_dir::String, format::String="CSV"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
     for i in 1:length(province)
         data_dowload(province[i], output_dir, url, file_basename, format)
     end
