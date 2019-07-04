@@ -1,0 +1,7 @@
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+ClimateTools = "4f4ee721-4970-5af2-8560-6c1d960e3231"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
+NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
