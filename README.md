@@ -176,7 +176,21 @@ struct WeatherStation{A <: AxisArray}
 end
 ```
 
+The `WeatherNetwork` is a in-memory representation of a network of `WeatherStation`.
+
+```julia
+struct WeatherNetwork{A <: Array{WeatherStation}}
+    data::A
+    stationID::Array{String}
+end
+```
 
 ### Mapping
+
+Mapping `WeatherNetwork` data can be done using `plotstation_data`.
+
+```julia
+plotstation_data(W::WeatherNetwork{<:Any}, data; reg="canada", N=12, titlestr::String="", filename::String="")
+```
 
 ![Example map](/images/nbobs_max_rainfall_amount_24h_qc.png)
