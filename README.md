@@ -45,6 +45,8 @@ The extract script will ask you which province data you want to download, its ou
 
 #### NetCDF
 
+By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm) :
+
 ```
 dimensions:
 	station = UNLIMITED ; // (1 currently)
@@ -133,10 +135,13 @@ variables:
 
 #### CSV
 
-|Year  |5 min   |10 min  |15 min  |30min   |1h       |2h       |6h     |12h    |24h   |
+By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm) :
+
+|Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24h   |
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------:|:-----:|:-----:|-----:|
 |      |        |        |        |        |         |         |       |       |      |
 
+Station informations for all the province are returned in a CSV file named info_stations_{PROVINCE_CODE}.csv :
 
 |Name  |Province|ID      |Lat     |Lon     |Elevation|Number of years|CSV filename|Original filename|
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------------:|:----------:|----------------:|
