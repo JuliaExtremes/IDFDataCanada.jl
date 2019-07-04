@@ -21,12 +21,12 @@ A set of methods to get ECCC IDF data from .txt files
 
 Be sure to add the module to your path before using it :
 ```julia
-push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
+push!(LOAD_PATH, "/path/to/dir/IDF-data/")
 using IDF
 ```
 ### Extract data
 
-There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (existing folder) and the format (CSV or netCDF). The url (ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/) and the basename of the files (IDF_v3.00_2019_02_27) are set by default but can be entered as keyword arguments (they will change with data update).
+There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (existing folder) and the format (CSV or netCDF). The url (ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/) and the basename of the files (IDF_v3.00_2019_02_27) are set by default but can be entered as keyword arguments (as they will change with data update).
 
 ```julia
 data_download(province, output_dir, format; url, basename)
@@ -137,7 +137,7 @@ variables:
 
 By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm) :
 
-|Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24h   |
+|Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24 h   |
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------:|:-----:|:-----:|-----:|
 |      |        |        |        |        |         |         |       |       |      |
 
@@ -148,6 +148,33 @@ Station informations for all the province are returned in a CSV file named info_
 |      |        |        |        |        |         |               |            |                 |
 
 
+### Reading NetCDF files
+
+Methods are currently in development to load weather station netCDF files with `ClimateTools` in `weather_station` branch.
+
+The `WeatherStation` is a in-memory representation of a CF-compliant netCDF file for station data.
+
+```julia
+struct WeatherStation{A <: AxisArray}
+    data::A
+    lon::Real
+    lat::Real
+    alt::Real
+    stationID::String # Alphanumerical ID of the weather station
+    stationName::String # Name of the weather station
+    filename::String # Path of the original file
+    dataunits::String # Celsius, kelvin, etc.
+    lonunits::String # Longitude coordinate unit
+    latunits::String # Latitude coordinate unit
+    altunits::String # Altitude coordinate unit
+    variable::String # Type of variable
+    typeofvar::String # Variable type (e.g. tasmax, tasmin, pr)
+    typeofcal::String # Calendar type
+    timeattrib::Dict # Time attributes (e.g. days since ... )
+    varattribs::Dict # Variable attributes
+    globalattribs::Dict # Global attributes
+end
+```
 
 
 ### Mapping
