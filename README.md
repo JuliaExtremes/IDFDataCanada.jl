@@ -133,9 +133,10 @@ variables:
 
 #### CSV
 
-```csv
-Nom,Province,ID,Lat,Lon,Elevation,Nombre d'annees,Fichier CSV,Fichier original
-```
+
+|Name  |Province|ID      |Lat     |Lon     |Elevation|Number of years|CSV filename|Original filename|
+|:-----|:------:|:------:|:------:|:------:|:-------:|:-------------:|:----------:|----------------:|
+| -    | -      | -      | -      | -      | -       | -             | -          | -               |
 
 ```csv
 Year,5 min,10 min,15 min,30 min,1 h,2 h,6 h,12 h,24 h
