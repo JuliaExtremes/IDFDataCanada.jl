@@ -133,6 +133,14 @@ variables:
 
 #### CSV
 
+```csv
+Nom,Province,ID,Lat,Lon,Elevation,Nombre d'annees,Fichier CSV,Fichier original
+```
+
+```csv
+Year,5 min,10 min,15 min,30 min,1 h,2 h,6 h,12 h,24 h
+```
+
 ### Mapping
 
 ![Example map](/images/nbobs_max_rainfall_amount_24h_qc.png)
