@@ -337,6 +337,38 @@ function netcdf_generator(fileName::String)
 end
 
 """
+    network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
+
+
+This function applies any function over WeatherNetwork and returns a WeatherNetwork. 
+"""
+function network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
+    nstations = length(W)
+    data = Array{WeatherStation}(undef, nstations)
+    stationID = Array{String}(undef, nstations)
+    for i=1:nstations
+        data[i] = WeatherStation(AxisArray([any_func(W[i])]),
+                                 W[i].lon,
+                                 W[i].lat,
+                                 W[i].alt,
+                                 W[i].stationID,
+                                 stationName=W[i].stationName,
+                                 filename=W[i].filename,
+                                 dataunits=W[i].dataunits,
+                                 latunits=W[i].latunits,
+                                 lonunits=W[i].lonunits,
+                                 altunits=W[i].altunits,
+                                 variable="$(any_func)($(W[i].variable))", #
+                                 typeofvar=W[i].typeofvar,
+                                 varattribs=W[i].varattribs,
+                                 globalattribs=W[i].globalattribs)
+        stationID[i] = data[i].stationID
+    end
+    println("$(any_func)($(W[i].variable))")
+    return WeatherNetwork(data, stationID)
+end
+
+"""
     plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
 
 This function plots a weather station on a map.
