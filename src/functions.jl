@@ -353,7 +353,6 @@ end
 # """
 #     network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
 #
-#
 # This function applies any function over WeatherNetwork and returns a WeatherNetwork.
 # """
 # function network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
@@ -408,11 +407,11 @@ function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String=""
 end
 
 """
-    function plotstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
+    plotweatherstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
 
 This function plots WeatherNetwork on a map.
 """
-function plotweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
+function plotweatherstation(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
     # Empty-map generator
     status, fig, ax, m = mapclimgrid(region=reg)
 
@@ -431,14 +430,20 @@ function plotweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String=""
     end
 end
 
-function plotstation_data(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
-    # Empty-map generator
-    status, fig, ax, m = mapclimgrid(region=reg)    # Canadian stations by default for now
+"""
+    plotweatherstation_data(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
 
-    # Plot each station from its lat/lon
-    lon, lat = ClimateTools.getnetworkcoords(C)
+This function plots data from WeatherNetwork on a map.
+"""
+function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="")
+    # Empty-map generator
+    status, fig, ax, m = mapclimgrid(region=reg)
+
+    # Plot each weather station and its associated data
+    lon, lat = ClimateTools.getnetworkcoords(W)
     x, y = m(lon, lat)
-    m.plot(x, y, "r+", markersize=msize)
+    cs = m.scatter(x, y, c=data)
+    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
 
     # Title
     ClimateTools.title(titlestr)
