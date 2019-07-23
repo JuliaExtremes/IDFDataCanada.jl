@@ -396,7 +396,7 @@ function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String=""
     lon = W.lon
     x, y = m(lon, lat)
     cs = m.scatter(x, y)
-    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
+    #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
 
     # Title
     ClimateTools.title(titlestr)
@@ -408,18 +408,19 @@ function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String=""
 end
 
 """
-    function plotstation(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
+    function plotstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
 
 This function plots WeatherNetwork on a map.
 """
-function plotstation(C::WeatherNetwork{<:Any}; reg="canada", msize=2, titlestr::String="", filename::String="")
+function plotweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
     # Empty-map generator
-    status, fig, ax, m = mapclimgrid(region=reg)    # Canadian stations by default for now
+    status, fig, ax, m = mapclimgrid(region=reg)
 
-    # Plot each station from its lat/lon
-    lon, lat = ClimateTools.getnetworkcoords(C)
+    # Plot weather network on the empty map
+    lon, lat = ClimateTools.getnetworkcoords(W)
     x, y = m(lon, lat)
-    m.plot(x, y, "r+", markersize=msize)
+    cs = m.scatter(x, y)
+    #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
 
     # Title
     ClimateTools.title(titlestr)
