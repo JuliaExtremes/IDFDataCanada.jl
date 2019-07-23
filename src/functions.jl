@@ -383,17 +383,20 @@ end
 # end
 
 """
-    plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
+    plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
 
 This function plots a weather station on a map.
 """
-function plotstation(C::WeatherStation; reg="canada", msize=2, titlestr::String="", filename::String="")
+function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String="", filename::String="")
     # Empty-map generator
     status, fig, ax, m = mapclimgrid(region=reg)
 
-    # Plot station
-    x, y = m(C.lon, C.lat)
-    m.plot(x, y, "r+", markersize=msize)
+    # Plot weather station on the empty map
+    lat = W.lat
+    lon = W.lon
+    x, y = m(lon, lat)
+    cs = m.scatter(x, y)
+    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
 
     # Title
     ClimateTools.title(titlestr)
