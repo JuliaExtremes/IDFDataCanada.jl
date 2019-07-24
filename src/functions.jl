@@ -435,7 +435,7 @@ end
 
 This function plots data from WeatherNetwork on a map.
 """
-function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="")
+function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
     # Empty-map generator
     status, fig, ax, m = mapclimgrid(region=reg)
 
@@ -443,13 +443,13 @@ function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr
     lon, lat = ClimateTools.getnetworkcoords(W)
     x, y = m(lon, lat)
     cs = m.scatter(x, y, c=data)
-    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
+    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=cs_label)
 
     # Title
     ClimateTools.title(titlestr)
 
     # Save to "filename" if not empty
     if !isempty(filename)
-        PyPlot.savefig(filename, dpi=300)
+        ClimateTools.PyPlot.savefig(filename, dpi=300)
     end
 end
