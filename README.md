@@ -190,7 +190,51 @@ end
 Mapping `WeatherNetwork` data can be done using `plotstation_data`.
 
 ```julia
-plotstation_data(W::WeatherNetwork{<:Any}, data; reg="canada", N=12, titlestr::String="", filename::String="")
+plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
 ```
 
-![Example map](/images/nbobs_max_rainfall_amount_24h_qc.png)
+#### Examples
+
+British Columbia
+
+![BC map](/images/BC_obs_24h.png)
+
+Alberta
+
+![AB map](/images/AB_obs_24h.png)
+
+Saskatchewan
+
+![SK map](/images/SK_obs_24h.png)
+
+Manitoba
+
+![MB map](/images/MB_obs_24h.png)
+
+Ontario
+
+![ON map](/images/ON_obs_24h.png)
+
+Quebec
+
+![QC map](/images/QC_obs_24h.png)
+
+New Brunswick
+
+![NB map](/images/NB_obs_24h.png)
+
+Nova Scotia
+
+![NS map](/images/NS_obs_24h.png)
+
+Prince Edward Island
+
+![PE map](/images/PE_obs_24h.png)
+
+Newfoundland
+
+![NL map](/images/NL_obs_24h.png)
+
+
+
+
