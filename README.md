@@ -5,12 +5,12 @@ A set of methods to get ECCC IDF data from .txt files
 
 ### Julia dependencies
 
-* ClimateTools
 * CSV
 * DataFrames
 * Dates
 * Glob
 * NCDatasets
+* ClimateTools (not required for data extraction)
 
 ### Command-line utilities
 
@@ -26,7 +26,9 @@ using IDF
 ```
 ### Extract data
 
-There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (existing folder) and the format (CSV or netCDF). The url (ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/) and the basename of the files (IDF_v3.00_2019_02_27) are set by default but can be entered as keyword arguments (as they will change with data update).
+There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (existing folder) and the format (CSV or netCDF).
+
+The url (**ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/**) and the basename of the files (**IDF_v3.00_2019_02_27**) are set by default but can be entered as keyword arguments (as they will change with data update).
 
 ```julia
 data_download(province, output_dir, format; url, basename)
@@ -130,7 +132,7 @@ variables:
 		:title = "Short Duration Rainfall Intensity-Duration-Frequency Data (ECCC)" ;
 		:Conventions = "CF-1.7" ;
 		:comment = "see H.2.4. Contiguous ragged array representation of time series" ;
-		:original_source = "idf_v3-00_2019_02_27_702_QC_7027320_MONTREAL_ST-HUBERT_A.txt" 
+		:original_source = "idf_v3-00_2019_02_27_702_PROV_STATIONID_STATIONNAME.txt" 
 ```
 
 #### CSV
@@ -147,7 +149,7 @@ Station informations for all the province are returned in a CSV file named info_
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------------:|:----------:|----------------:|
 |      |        |        |        |        |         |               |            |                 |
 
-
+---
 ### Reading NetCDF files
 
 Methods are currently in development to load weather station netCDF files with `ClimateTools` in `weather_station` branch.
@@ -184,7 +186,7 @@ struct WeatherNetwork{A <: Array{WeatherStation}}
     stationID::Array{String}
 end
 ```
-
+---
 ### Mapping
 
 Mapping `WeatherNetwork` data can be done using `plotstation_data`.
