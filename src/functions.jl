@@ -1,4 +1,4 @@
-using ClimateTools, DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
+using DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
 
 """
     get_idf(fileName::String)
@@ -37,22 +37,24 @@ function get_idf(fileName::String)
     indicateur = "---------------------------------------------------------------------"
     for i = 1:length(doc)
         if isequal(strip(doc[i]), indicateur)
-            global nbyears = i-30
+            global nbyears = i-30   # Nb of years
         end
     end
 
     # Data from Table 1 : Annual Maximum (mm)/Maximum annuel (mm)
     table1 = doc[30:30+nbyears-1]
-    data_df = DataFrame(A = String[],
-    B = String[],
-    C = String[],
-    D = String[],
-    E = String[],
-    F = String[],
-    G = String[],
-    H = String[],
-    I = String[],
-    J = String[])
+
+    # Create an empty Dataframe to be filled with values from table 1
+    data_df = DataFrame(A = String[],   # Year
+    B = String[],   # 5min
+    C = String[],   # 10min
+    D = String[],   # 15min
+    E = String[],   # 30min
+    F = String[],   # 1h
+    G = String[],   # 2h
+    H = String[],   # 6h
+    I = String[],   # 12h
+    J = String[])   # 24h
     for j in 1:length(table1)
         data = split(table1[j])
         push!(data_df, data)
@@ -69,9 +71,9 @@ function get_idf(fileName::String)
     close(f)
     println(stationname)
 
+    # Return station info + table 1 data
     return stationid, lat, lon, altitude, data_df, stationname
 end
-
 
 """
     txt2csv(input_dir::String, output_dir::String)
@@ -84,17 +86,16 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
     nbstations = size(files,1)
 
-    # CSV info file
-    info_df = DataFrame(A = String[],
-    B = String[],
-    C = String[],
-    D = String[],
-    E = String[],
-    F = String[],
-    G = String[],
-    H = String[],
-    I = String[])
-
+    # Create an empty Dataframe to be filled with station info
+    info_df = DataFrame(A = String[],   # Name
+    B = String[],   # Province
+    C = String[],   # ID
+    D = String[],   # Lat
+    E = String[],   # Lon
+    F = String[],   # Elevation
+    G = String[],   # Number of years
+    H = String[],   # CSV filename
+    I = String[])   # Original filename
     colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
     names!(info_df, Symbol.(colnames))
 
@@ -102,15 +103,15 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
         filename = files[i]
         stationid, lat, lon, altitude, data, stationname = get_idf(filename)
         output_f = "$(output_dir)/$(stationid).csv"
-        CSV.write(output_f, data)
+        CSV.write(output_f, data)   # Generate a CSV file from table 1 data for each station
         println("$(basename(output_f)) : OK")
 
         nbyears = size(info_df, 1)
         info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
-        push!(info_df, info)
+        push!(info_df, info)    # Fill the province station info file
     end
     output_info = "$(output_dir)/info_stations_$(province).csv"
-    CSV.write(output_info, info_df)
+    CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
 end
 
 """
@@ -124,30 +125,36 @@ function txt2netcdf(input_dir::String, output_dir::String)
     nbstations = size(files,1)
 
     for i in 1:nbstations
+        # For each station, get the idf data and station info
         filename = files[i]
         stationid, lat, lon, altitude, data, stationname = get_idf(filename)
 
+        # Generate an empty NetCDF
         output_f = "$(output_dir)/$(stationid).nc"
         netcdf_generator(output_f)
 
+        # Append data to the empty NetCDF
         ds = Dataset(output_f, "a")
-
         ds.attrib["original_source"] = basename(filename)
 
+        # Station infos :
         ds["lat"][1] = lat
         ds["lon"][1] = lon
         ds["alt"][1] = altitude
         ds["station_ID"][1, 1:length(stationid)] = collect(stationid)
         ds["station_name"][1, 1:length(stationname)] = collect(stationname)
 
+        # Number of observations :
         nb_obs = size(data,1)
         ds["row_size"][1] = nb_obs
 
-        data[1] = Dates.DateTime.(parse.(Int, data[1])) # Conversion des années en dates
+        # Time :
+        data[1] = Dates.DateTime.(parse.(Int, data[1])) # Convert years to Date format
         units = "days since 2000-01-01 00:00:00"
-        timedata = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")
+        timedata = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
         ds["time"][1:nb_obs] = timedata
 
+        # Data from table 1 :
         ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[2], "NaN"))
         ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[3], "NaN"))
         ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[4], "NaN"))
@@ -164,7 +171,6 @@ function txt2netcdf(input_dir::String, output_dir::String)
     end
 end
 
-
 """
     data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
 
@@ -172,13 +178,15 @@ This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(province::String, output_dir::String, format::String="CSV"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+
+    # Make the output directory if it doesn't exist :
     try
         mkdir("$(output_dir)/$(province)")
     catch
         nothing
     end
 
-    # make a temp directory for all data
+    # Make a temp directory for all data :
     try
         cd("$(output_dir)/temp_data")
     catch
@@ -189,6 +197,7 @@ function data_download(province::String, output_dir::String, format::String="CSV
     file = "$(file_basename)_$(province).zip"
     full_url = "$(url)$(file)"
 
+    # Download the data (if not downloaded already) and unzip the data :
     try
         run(`unzip $(file)`)   # unzip the data
     catch
@@ -196,9 +205,10 @@ function data_download(province::String, output_dir::String, format::String="CSV
         run(`unzip $(file)`)   # unzip the data
     end
 
-    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)"
-    output_d = "$(output_dir)/$(province)"
+    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+    output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
 
+    # Convert the data in the specified format (CSV or NetCDF) :
     if format == "CSV"
         txt2csv(input_d, output_d, province)
     elseif format == "netCDF"
@@ -207,6 +217,7 @@ function data_download(province::String, output_dir::String, format::String="CSV
         throw(error("Format is not valid"))
     end
 
+    # TODO Fix automatic deletion
     # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
     #run(`rmdir -r $(input_d)`)  # delete the original data directory
     #run(`rm $(file)`)   # delete the zip file
@@ -229,11 +240,13 @@ end
 """
     netcdf_generator(fileName::String)
 
-This functions generates empty netCDF files (used by txt2csv).
+This functions generates empty netCDF files (used by txt2netcdf).
 """
 function netcdf_generator(fileName::String)
+    # Creation of an empty NetCDF :
     ds = Dataset(fileName,"c")
 
+    # Content definition :
     # Dimensions
     defDim(ds, "station", Inf)
     defDim(ds, "obs", Inf)
@@ -336,6 +349,12 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
+
+##########################################################################################
+#### Other functions #####################################################################
+##########################################################################################
+using ClimateTools
+
 """
     network_calculator(W::WeatherNetwork, any_func::Function)
 
@@ -350,36 +369,19 @@ function network_calculator(W::WeatherNetwork, any_func::Function)
     return data
 end
 
-# """
-#     network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
-#
-# This function applies any function over WeatherNetwork and returns a WeatherNetwork.
-# """
-# function network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
-#     nstations = length(W)
-#     data = Array{WeatherStation}(undef, nstations)
-#     stationID = Array{String}(undef, nstations)
-#     for i=1:nstations
-#         data[i] = WeatherStation(AxisArray([any_func(W[i])]),
-#                                  W[i].lon,
-#                                  W[i].lat,
-#                                  W[i].alt,
-#                                  W[i].stationID,
-#                                  stationName=W[i].stationName,
-#                                  filename=W[i].filename,
-#                                  dataunits=W[i].dataunits,
-#                                  latunits=W[i].latunits,
-#                                  lonunits=W[i].lonunits,
-#                                  altunits=W[i].altunits,
-#                                  variable="$(any_func)($(W[i].variable))", #
-#                                  typeofvar=W[i].typeofvar,
-#                                  varattribs=W[i].varattribs,
-#                                  globalattribs=W[i].globalattribs)
-#         stationID[i] = data[i].stationID
-#     end
-#     println("$(any_func)($(W[i].variable))")
-#     return WeatherNetwork(data, stationID)
-# end
+"""
+    get_network_field(W::WeatherNetwork, field::Symbol)
+
+This function returns an array of specified WeatherNetwork field.
+"""
+function get_network_field(W::WeatherNetwork, field::Symbol)
+    data = []
+    for i=1:length(W)
+        y = values(getfield(W[i], field))
+        push!(data, y)
+    end
+    return data
+end
 
 """
     plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
