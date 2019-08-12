@@ -177,11 +177,7 @@ end
 This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. NetCDF format is selected by default.
 """
-<<<<<<< HEAD
 function data_download(province::String, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
-=======
-function data_download(province::String, output_dir::String, format::String="CSV"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
->>>>>>> 2c5829ac3df1577cec7dee86ee6c984a58ec74a9
 
     # Make the output directory if it doesn't exist :
     try
@@ -213,11 +209,7 @@ function data_download(province::String, output_dir::String, format::String="CSV
     output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
 
     # Convert the data in the specified format (CSV or NetCDF) :
-<<<<<<< HEAD
     if lowercase(format) == "csv"
-=======
-    if format == "CSV"
->>>>>>> 2c5829ac3df1577cec7dee86ee6c984a58ec74a9
         txt2csv(input_d, output_d, province)
     elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
         txt2netcdf(input_d, output_d)
