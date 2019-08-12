@@ -1,4 +1,4 @@
-using ClimateTools, DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
+using DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
 
 """
     get_idf(fileName::String)
@@ -181,15 +181,14 @@ This function downloads IDF data from ECCC client_climate server for a province
 """
 function data_download(province::String, output_dir::String, format::String="CSV"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
 
-    # TODO Comments cleanup + add documentation + fix automatic file removal function
-
+    # Make the output directory if it doesn't exist :
     try
         mkdir("$(output_dir)/$(province)")
     catch
         nothing
     end
 
-    # make a temp directory for all data
+    # Make a temp directory for all data :
     try
         cd("$(output_dir)/temp_data")
     catch
@@ -200,6 +199,7 @@ function data_download(province::String, output_dir::String, format::String="CSV
     file = "$(file_basename)_$(province).zip"
     full_url = "$(url)$(file)"
 
+    # Download the data (if not downloaded already) and unzip the data :
     try
         run(`unzip $(file)`)   # unzip the data
     catch
@@ -207,9 +207,10 @@ function data_download(province::String, output_dir::String, format::String="CSV
         run(`unzip $(file)`)   # unzip the data
     end
 
-    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)"
-    output_d = "$(output_dir)/$(province)"
+    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+    output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
 
+    # Convert the data in the specified format (CSV or NetCDF) :
     if format == "CSV"
         txt2csv(input_d, output_d, province)
     elseif format == "netCDF"
@@ -218,6 +219,7 @@ function data_download(province::String, output_dir::String, format::String="CSV
         throw(error("Format is not valid"))
     end
 
+    # TODO Fix automatic deletion
     # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
     #run(`rmdir -r $(input_d)`)  # delete the original data directory
     #run(`rm $(file)`)   # delete the zip file
@@ -240,11 +242,13 @@ end
 """
     netcdf_generator(fileName::String)
 
-This functions generates empty netCDF files (used by txt2csv).
+This functions generates empty netCDF files (used by txt2netcdf).
 """
 function netcdf_generator(fileName::String)
+    # Creation of an empty NetCDF :
     ds = Dataset(fileName,"c")
 
+    # Content definition :
     # Dimensions
     defDim(ds, "station", Inf)
     defDim(ds, "obs", Inf)
@@ -347,6 +351,11 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
+#########################
+#### Other functions ####
+#########################
+using ClimateTools
+
 """
     network_calculator(W::WeatherNetwork, any_func::Function)
 
@@ -361,36 +370,15 @@ function network_calculator(W::WeatherNetwork, any_func::Function)
     return data
 end
 
-# """
-#     network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
-#
-# This function applies any function over WeatherNetwork and returns a WeatherNetwork.
-# """
-# function network_calculator(W::WeatherNetwork{<:Any}, any_func::Function)
-#     nstations = length(W)
-#     data = Array{WeatherStation}(undef, nstations)
-#     stationID = Array{String}(undef, nstations)
-#     for i=1:nstations
-#         data[i] = WeatherStation(AxisArray([any_func(W[i])]),
-#                                  W[i].lon,
-#                                  W[i].lat,
-#                                  W[i].alt,
-#                                  W[i].stationID,
-#                                  stationName=W[i].stationName,
-#                                  filename=W[i].filename,
-#                                  dataunits=W[i].dataunits,
-#                                  latunits=W[i].latunits,
-#                                  lonunits=W[i].lonunits,
-#                                  altunits=W[i].altunits,
-#                                  variable="$(any_func)($(W[i].variable))", #
-#                                  typeofvar=W[i].typeofvar,
-#                                  varattribs=W[i].varattribs,
-#                                  globalattribs=W[i].globalattribs)
-#         stationID[i] = data[i].stationID
-#     end
-#     println("$(any_func)($(W[i].variable))")
-#     return WeatherNetwork(data, stationID)
-# end
+function get_network_field(W::WeatherNetwork, field::Symbol)
+    data = []
+    for i=1:length(W)
+        y = values(getfield(W[i], field))
+        push!(data, y)
+    end
+    return data
+end
+
 
 """
     plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
