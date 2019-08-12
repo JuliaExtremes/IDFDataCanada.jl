@@ -75,7 +75,6 @@ function get_idf(fileName::String)
     return stationid, lat, lon, altitude, data_df, stationname
 end
 
-
 """
     txt2csv(input_dir::String, output_dir::String)
 
@@ -171,7 +170,6 @@ function txt2netcdf(input_dir::String, output_dir::String)
     println("$(basename(output_f)) : OK")
     end
 end
-
 
 """
     data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
@@ -351,9 +349,10 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
-#########################
-#### Other functions ####
-#########################
+
+##########################################################################################
+#### Other functions #####################################################################
+##########################################################################################
 using ClimateTools
 
 """
@@ -370,6 +369,11 @@ function network_calculator(W::WeatherNetwork, any_func::Function)
     return data
 end
 
+"""
+    get_network_field(W::WeatherNetwork, field::Symbol)
+
+This function returns an array of specified WeatherNetwork field.
+"""
 function get_network_field(W::WeatherNetwork, field::Symbol)
     data = []
     for i=1:length(W)
@@ -378,7 +382,6 @@ function get_network_field(W::WeatherNetwork, field::Symbol)
     end
     return data
 end
-
 
 """
     plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
