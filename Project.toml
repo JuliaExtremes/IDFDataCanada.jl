@@ -1,3 +1,5 @@
+name = "IDF"
+
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 ClimateTools = "4f4ee721-4970-5af2-8560-6c1d960e3231"
