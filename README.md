@@ -5,7 +5,7 @@ A set of methods to get ECCC IDF data from .txt files.
 
 ## Overview
 
-Intensity-Duration-Frequency (IDF) files from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
+Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
 
 ## Required dependencies 
 
@@ -218,10 +218,22 @@ HARRINGTON CDA CS
 830P001.nc : OK
 ```
 
+Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory. 
+
 ---
-### Reading NetCDF files
+### Reading the NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
 
 Methods are currently in development to load weather station netCDF files with `ClimateTools` in `weather_station` branch.
+
+#### Installation
+
+To install ClimateTools, follow the [installation guide](https://balinus.github.io/ClimateTools.jl/stable/installation/) and once the python dependencies are properly installed, you can then install the weather_station branch of ClimateTools :
+
+```julia
+pkg> add ClimateTools#weather_station
+```
+
+#### WeatherStation
 
 The `WeatherStation` is a in-memory representation of a CF-compliant netCDF file for station data.
 
@@ -246,6 +258,8 @@ struct WeatherStation{A <: AxisArray}
     globalattribs::Dict # Global attributes
 end
 ```
+
+#### WeatherNetwork
 
 The `WeatherNetwork` is a in-memory representation of a network of `WeatherStation`.
 
@@ -305,6 +319,14 @@ Prince Edward Island
 Newfoundland
 
 ![NL map](/images/NL_obs_24h.png)
+
+
+## TO-DO
+
+* Automatic deletion of .zip files
+* Add ECCC weather station data (work in progress)
+* Add tests and code coverage 
+
 
 
 
