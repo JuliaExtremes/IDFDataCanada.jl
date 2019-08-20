@@ -1,4 +1,6 @@
 # IDF-data 🇨🇦
+[![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
+
 A set of methods to get ECCC IDF data from .txt files.
 
 *Note: Compatible with Linux/MacOS only, sorry Windows users...* 😐
@@ -29,7 +31,7 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 
 ### Installation
 
-*IDF-data* is not (yet) a registered package, so installing it directly with Pkg is not possible. Thus, there is two ways to use the package after having cloned it:
+*IDF-data* is not (yet) a registered package, so installing it directly with Pkg is not possible. Thus, there is two ways to use the package after having it cloned:
 
 ```
 $git clone https://github.com/houton199/IDF-data.git /path/to/dir/
@@ -46,7 +48,7 @@ using IDF
 
 #### 2) Activate the environnement and install the required dependencies :
 
-If all the required dependencies are not installed, running Pkg.*Instantiate* will download all the required dependencies :
+If all the required dependencies are **not** installed, running Pkg.*instantiate* will download all the required dependencies :
 
 ```
 $cd /path/to/dir/IDF-data
@@ -83,7 +85,7 @@ The extract script will ask you which province data you want to download, its ou
 
 #### NetCDF
 
-By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm) :
+By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm).
 
 ```
 dimensions:
@@ -173,7 +175,7 @@ variables:
 
 #### CSV
 
-By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm) :
+By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm).
 
 |Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24 h   |
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------:|:-----:|:-----:|-----:|
@@ -247,12 +249,17 @@ HARRINGTON CDA CS
 830P001.nc : OK
 ```
 
-Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory. 
+Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory.
+
+### CSV
+```
+```
+ 
 
 ---
 ## Data usage
 
-### Reading the NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
+### Reading station data NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
 
 Methods are currently in development to load weather station netCDF files with `ClimateTools` in the `weather_station` branch. 
 
