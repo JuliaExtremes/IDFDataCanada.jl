@@ -27,11 +27,38 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 
 ## Getting started
 
-Be sure to add the module to your path before using it :
+### Installation
+
+*IDF-data* is not (yet) a registered package, so installing it directly with Pkg is not possible. Thus, there is two ways to use the package after having cloned it:
+
+```
+$git clone https://github.com/houton199/IDF-data.git /path/to/dir/
+```
+
+#### 1) Add the module to Julia's loading path :
+
+If all the required dependencies are installed, one can simply add the module to Julia's loading path before using it :
+
 ```julia
 push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
 using IDF
 ```
+
+#### 2) Activate the environnement and install the required dependencies :
+
+If all the required dependencies are not installed, running Pkg.*Instantiate* will download all the required dependencies :
+
+```
+$cd /path/to/dir/IDF-data
+$julia
+pkg> activate .
+pkg> instantiate
+```
+
+```julia
+using IDF
+```
+
 ### Extract data
 
 There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (must be an existing folder) and the format (CSV or netCDF).
