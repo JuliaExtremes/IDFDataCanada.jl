@@ -7,6 +7,8 @@ A set of methods to get ECCC IDF data from .txt files.
 
 Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
 
+*Work in progress: run at your own risk*
+
 ## Required dependencies 
 
 ### Julia dependencies
@@ -221,9 +223,11 @@ HARRINGTON CDA CS
 Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory. 
 
 ---
+## Data usage
+
 ### Reading the NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
 
-Methods are currently in development to load weather station netCDF files with `ClimateTools` in `weather_station` branch.
+Methods are currently in development to load weather station netCDF files with `ClimateTools` in the `weather_station` branch. 
 
 #### Installation
 
@@ -270,9 +274,27 @@ struct WeatherNetwork{A <: Array{WeatherStation}}
 end
 ```
 ---
+### Plotting
+
+Plotting of `WeatherStation` data can be done using `plotweatherstation`.
+
+```julia
+plotweatherstation(W::WeatherStation)
+```
+
+![fig1: Plotting of WS](/images/fig1.png)
+
+Plotting of `WeatherNetwork` data can be done using `plotweathernetwork`.
+
+```julia
+plotweathernetwork(W::WeatherNetwork)
+```
+
+![fig3: Plotting of WN](/images/fig3.png)
+
 ### Mapping
 
-Mapping `WeatherNetwork` data can be done using `plotstation_data`.
+Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
 
 ```julia
 plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
