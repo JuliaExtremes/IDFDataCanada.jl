@@ -1,5 +1,11 @@
-# IDF-data
-A set of methods to get ECCC IDF data from .txt files
+# IDF-data 🇨🇦
+A set of methods to get ECCC IDF data from .txt files.
+
+*Note: Compatible with Linux/MacOS only, sorry Windows users...* 😐
+
+## Overview
+
+Intensity-Duration-Frequency (IDF) files from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
 
 ## Required dependencies 
 
@@ -21,12 +27,12 @@ A set of methods to get ECCC IDF data from .txt files
 
 Be sure to add the module to your path before using it :
 ```julia
-push!(LOAD_PATH, "/path/to/dir/IDF-data/")
+push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
 using IDF
 ```
 ### Extract data
 
-There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (existing folder) and the format (CSV or netCDF).
+There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (must be an existing folder) and the format (CSV or netCDF).
 
 The url (**ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/**) and the basename of the files (**IDF_v3.00_2019_02_27**) are set by default but can be entered as keyword arguments (as they will change with data update).
 
@@ -35,6 +41,7 @@ data_download(province, output_dir, format; url, basename)
 ```
 
 `data_download` will create output files of the specified format in the output directory.
+
 
 The second way is to call the `extract.jl` script.
 ```console
@@ -149,6 +156,68 @@ Station informations for all the province are returned in a CSV file named info_
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------------:|:----------:|----------------:|
 |      |        |        |        |        |         |               |            |                 |
 
+## Examples
+
+### NetCDF
+
+Let's say someone wants to extract IDF data for Prince Edward Island (PE) in NetCDF format in the present working directory :
+
+```julia
+julia> using IDF
+julia> data_download("PE", pwd(), "netcdf")
+unzip:  cannot find or open IDF_v3.00_2019_02_27_PE.zip, IDF_v3.00_2019_02_27_PE.zip.zip or IDF_v3.00_2019_02_27_PE.zip.ZIP.
+--2019-08-20 10:16:55--  ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/IDF_v3.00_2019_02_27_PE.zip
+           => « IDF_v3.00_2019_02_27_PE.zip »
+Résolution de ftp.tor.ec.gc.ca (ftp.tor.ec.gc.ca)… 199.212.19.56
+Connexion à ftp.tor.ec.gc.ca (ftp.tor.ec.gc.ca)|199.212.19.56|:21… connecté.
+Ouverture de session en tant que client_climate… Session établie.
+==> SYST ... terminé.    ==> PWD ... terminé.
+==> TYPE I ... terminé.  ==> CWD (1) /Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers ... terminé.
+==> SIZE IDF_v3.00_2019_02_27_PE.zip ... 2899710
+==> PASV ... terminé.    ==> RETR IDF_v3.00_2019_02_27_PE.zip ... terminé.
+Taille : 2899710 (2,8M) (non certifiée)
+
+IDF_v3.00_2019_02_2 100%[===================>]   2,76M  3,26MB/s    ds 0,8s    
+
+2019-08-20 10:16:56 (3,26 MB/s) - « IDF_v3.00_2019_02_27_PE.zip » sauvegardé [2899710]
+
+Archive:  IDF_v3.00_2019_02_27_PE.zip
+   creating: IDF_v3.00_2019_02_27_PE/
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.txt  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_qq.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_qq.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_r.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_r.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_t.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_t.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.txt  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_qq.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_qq.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_r.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_r.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_t.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_t.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.txt  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_r.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_r.png  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_t.pdf  
+  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_t.png  
+CHARLOTTETOWN A
+8300301.nc : OK
+SUMMERSIDE
+8300596.nc : OK
+HARRINGTON CDA CS
+830P001.nc : OK
+```
+
 ---
 ### Reading NetCDF files
 
@@ -236,7 +305,6 @@ Prince Edward Island
 Newfoundland
 
 ![NL map](/images/NL_obs_24h.png)
-
 
 
 
