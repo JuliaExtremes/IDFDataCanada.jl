@@ -31,24 +31,24 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 
 ### Installation
 
-*IDF-data* is not (yet) a registered package, so installing it directly with Pkg is not possible. Thus, there is two ways to use the package after having it cloned:
+*IDF-data* is not (yet) a registered package, so installing it directly with Julia's builtin package manager (Pkg) is not possible. Thus, there is two ways to use the package after having it cloned:
 
 ```
 $ git clone https://github.com/houton199/IDF-data.git /path/to/dir/
 ```
 
-#### 1) Add the module to Julia's loading path :
+#### 1) Add the module to Julia's loading path:
 
-If all the required dependencies are installed, one can simply add the module to Julia's loading path before using it :
+If all the required dependencies are installed, one can simply add the module to Julia's loading path before using it:
 
 ```julia
 push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
 using IDF
 ```
 
-#### 2) Activate the environnement and install the required dependencies :
+#### 2) Activate the environnement and install the required dependencies:
 
-If all the required dependencies are **not** installed, running Pkg.*instantiate* will download all the required dependencies :
+If all the required dependencies are **not** installed, running Pkg's *instantiate* will download all the required dependencies:
 
 ```
 $ cd /path/to/dir/IDF-data
@@ -85,7 +85,7 @@ The extract script will ask you which province data you want to download, its ou
 
 #### NetCDF
 
-By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm).
+By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1: Annual Maximum (mm).
 
 ```
 dimensions:
@@ -175,7 +175,7 @@ variables:
 
 #### CSV
 
-By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1 : Annual Maximum (mm).
+By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1: Annual Maximum (mm).
 
 |Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24 h   |
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------:|:-----:|:-----:|-----:|
@@ -191,7 +191,7 @@ Station informations for all the province are returned in a CSV file named info_
 
 ### NetCDF
 
-Let's say someone wants to extract IDF data for Prince Edward Island (PE) in NetCDF format in the present working directory :
+Let's say someone wants to extract IDF data for Prince Edward Island (PE) in NetCDF format in the present working directory:
 
 ```julia
 julia> using IDF
@@ -252,11 +252,25 @@ HARRINGTON CDA CS
 Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory.
 
 ### CSV
+
+Then, let's say someone wants to extract IDF data for Prince Edward Island (PE) in CSV format in the present working directory after having already downloaded the zip file:
+
 ```
+julia> data_download("PE", pwd(), "csv")
+Archive:  IDF_v3.00_2019_02_27_PE.zip
+replace IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.pdf? [y]es, [n]o, [A]ll, [N]one, [r]ename: N
+CHARLOTTETOWN A
+8300301.csv : OK
+SUMMERSIDE
+8300596.csv : OK
+HARRINGTON CDA CS
+830P001.csv : OK
 ```
+
+Three CSV files (8300301.csv, 8300596.csv and 830P001.csv) corresponding to the Prince Edward Island stations data and another CSV file (info\_stations\_PE.csv) containing the stations information will be returned in the present working directory.
  
 
----
+
 ## Data usage
 
 ### Reading station data NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
@@ -265,7 +279,7 @@ Methods are currently in development to load weather station netCDF files with `
 
 #### Installation
 
-To install ClimateTools, follow the [installation guide](https://balinus.github.io/ClimateTools.jl/stable/installation/) and once the python dependencies are properly installed, you can then install the weather_station branch of ClimateTools :
+To install ClimateTools, follow the [installation guide](https://balinus.github.io/ClimateTools.jl/stable/installation/) and once the python dependencies are properly installed, you can then install the weather_station branch of ClimateTools:
 
 ```julia
 pkg> add ClimateTools#weather_station
@@ -307,7 +321,10 @@ struct WeatherNetwork{A <: Array{WeatherStation}}
     stationID::Array{String}
 end
 ```
----
+
+
+## Visualization
+
 ### Plotting
 
 #### WeatherStation 
@@ -317,7 +334,7 @@ Plotting of `WeatherStation` data can be done using `plotweatherstation`.
 ```julia
 plotweatherstation(W::WeatherStation)
 ```
-**Example :**
+**Example**
 
 ![fig1: Plotting of WS](/images/fig1.png)
 
@@ -329,11 +346,13 @@ Plotting of `WeatherNetwork` data can be done using `plotweathernetwork`.
 plotweathernetwork(W::WeatherNetwork)
 ```
 
-**Example :**
+**Example**
 
 ![fig3: Plotting of WN](/images/fig3.png)
 
 ### Mapping
+
+#### WeatherNetwork
 
 Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
 
@@ -341,7 +360,7 @@ Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
 plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
 ```
 
-**Example :**
+**Example**
 
 British Columbia
 
@@ -350,9 +369,9 @@ British Columbia
 
 ## TO-DO
 
-* Automatic deletion of .zip files
-* Add ECCC weather station data (work in progress)
 * Add tests and code coverage 
+* Automatic deletion of .zip files in the intermediate downloading step
+* Add ECCC weather station data (work in progress)
 
 
 
