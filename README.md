@@ -336,6 +336,8 @@ plotweatherstation(W::WeatherStation)
 ```
 **Example**
 
+Plotting the 24-hour annual maximum rainfall data for one Quebec station:
+
 ![fig1: Plotting of WS](/images/fig1.png)
 
 #### WeatherNetwork
@@ -347,6 +349,8 @@ plotweathernetwork(W::WeatherNetwork)
 ```
 
 **Example**
+
+Plotting the 24-hour annual maximum rainfall data for five Quebec stations:
 
 ![fig3: Plotting of WN](/images/fig3.png)
 
@@ -362,6 +366,8 @@ plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String=
 
 **Example**
 
+Mapping the number of observations for all British Columbia stations:
+
 British Columbia
 
 ![BC map](/images/BC_obs_24h.png)
@@ -369,9 +375,9 @@ British Columbia
 
 ## TO-DO
 
-* Add tests and code coverage 
-* Automatic deletion of .zip files in the intermediate downloading step
-* Add ECCC weather station data (work in progress)
+* Add tests 
+* Automatic deletion of .zip files 
+* Add ECCC weather station data (*work in progress*)
 
 
 
