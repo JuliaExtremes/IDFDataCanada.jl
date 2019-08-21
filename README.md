@@ -3,13 +3,13 @@
 
 A set of methods to get ECCC IDF data from .txt files.
 
+*Work in progress: run at your own risk*
+
 *Note: Compatible with Linux/MacOS only, sorry Windows users...* 😐
 
 ## Overview
 
 Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
-
-*Work in progress: run at your own risk*
 
 ## Required dependencies 
 
@@ -34,7 +34,7 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 *IDF-data* is not (yet) a registered package, so installing it directly with Pkg is not possible. Thus, there is two ways to use the package after having it cloned:
 
 ```
-$git clone https://github.com/houton199/IDF-data.git /path/to/dir/
+$ git clone https://github.com/houton199/IDF-data.git /path/to/dir/
 ```
 
 #### 1) Add the module to Julia's loading path :
@@ -51,8 +51,8 @@ using IDF
 If all the required dependencies are **not** installed, running Pkg.*instantiate* will download all the required dependencies :
 
 ```
-$cd /path/to/dir/IDF-data
-$julia
+$ cd /path/to/dir/IDF-data
+$ julia
 pkg> activate .
 pkg> instantiate
 ```
@@ -310,19 +310,26 @@ end
 ---
 ### Plotting
 
+#### WeatherStation 
+
 Plotting of `WeatherStation` data can be done using `plotweatherstation`.
 
 ```julia
 plotweatherstation(W::WeatherStation)
 ```
+**Example :**
 
 ![fig1: Plotting of WS](/images/fig1.png)
+
+#### WeatherNetwork
 
 Plotting of `WeatherNetwork` data can be done using `plotweathernetwork`.
 
 ```julia
 plotweathernetwork(W::WeatherNetwork)
 ```
+
+**Example :**
 
 ![fig3: Plotting of WN](/images/fig3.png)
 
@@ -334,47 +341,11 @@ Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
 plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
 ```
 
-#### Examples
+**Example :**
 
 British Columbia
 
 ![BC map](/images/BC_obs_24h.png)
-
-Alberta
-
-![AB map](/images/AB_obs_24h.png)
-
-Saskatchewan
-
-![SK map](/images/SK_obs_24h.png)
-
-Manitoba
-
-![MB map](/images/MB_obs_24h.png)
-
-Ontario
-
-![ON map](/images/ON_obs_24h.png)
-
-Quebec
-
-![QC map](/images/QC_obs_24h.png)
-
-New Brunswick
-
-![NB map](/images/NB_obs_24h.png)
-
-Nova Scotia
-
-![NS map](/images/NS_obs_24h.png)
-
-Prince Edward Island
-
-![PE map](/images/PE_obs_24h.png)
-
-Newfoundland
-
-![NL map](/images/NL_obs_24h.png)
 
 
 ## TO-DO
