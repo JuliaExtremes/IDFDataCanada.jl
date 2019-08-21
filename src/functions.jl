@@ -353,105 +353,105 @@ end
 ##########################################################################################
 #### Other functions #####################################################################
 ##########################################################################################
-using ClimateTools
-
-"""
-    network_calculator(W::WeatherNetwork, any_func::Function)
-
-This function applies any function over WeatherNetwork data and returns an array of computed data.
-"""
-function network_calculator(W::WeatherNetwork, any_func::Function)
-    data = []
-    for i=1:length(W)
-        y = any_func(W[i].data)
-        push!(data, y)
-    end
-    return data
-end
-
-"""
-    get_network_field(W::WeatherNetwork, field::Symbol)
-
-This function returns an array of specified WeatherNetwork field.
-"""
-function get_network_field(W::WeatherNetwork, field::Symbol)
-    data = []
-    for i=1:length(W)
-        y = values(getfield(W[i], field))
-        push!(data, y)
-    end
-    return data
-end
-
-"""
-    plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
-
-This function plots a weather station on a map.
-"""
-function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String="", filename::String="")
-    # Empty-map generator
-    status, fig, ax, m = mapclimgrid(region=reg)
-
-    # Plot weather station on the empty map
-    lat = W.lat
-    lon = W.lon
-    x, y = m(lon, lat)
-    cs = m.scatter(x, y)
-    #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
-
-    # Title
-    ClimateTools.title(titlestr)
-
-    # Save to "filename" if not empty
-    if !isempty(filename)
-        PyPlot.savefig(filename, dpi=300)
-    end
-end
-
-"""
-    plotweatherstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-
-This function plots WeatherNetwork on a map.
-"""
-function plotweatherstation(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-    # Empty-map generator
-    status, fig, ax, m = mapclimgrid(region=reg)
-
-    # Plot weather network on the empty map
-    lon, lat = ClimateTools.getnetworkcoords(W)
-    x, y = m(lon, lat)
-    cs = m.scatter(x, y)
-    #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
-
-    # Title
-    ClimateTools.title(titlestr)
-
-    # Save to "filename" if not empty
-    if !isempty(filename)
-        PyPlot.savefig(filename, dpi=300)
-    end
-end
-
-"""
-    plotweatherstation_data(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-
-This function plots data from WeatherNetwork on a map.
-"""
-function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
-    # Empty-map generator
-    status, fig, ax, m = mapclimgrid(region=reg)
-
-    # Plot each weather station and its associated data
-    lon, lat = ClimateTools.getnetworkcoords(W)
-    x, y = m(lon, lat)
-    cs = m.scatter(x, y, c=data)
-    cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=cs_label)
-
-    # Title
-    ClimateTools.title(titlestr)
-
-    # Save to "filename" if not empty
-    if !isempty(filename)
-        ClimateTools.PyPlot.savefig(filename, dpi=300)
-    end
-end
+# using ClimateTools
+#
+# """
+#     network_calculator(W::WeatherNetwork, any_func::Function)
+#
+# This function applies any function over WeatherNetwork data and returns an array of computed data.
+# """
+# function network_calculator(W::WeatherNetwork, any_func::Function)
+#     data = []
+#     for i=1:length(W)
+#         y = any_func(W[i].data)
+#         push!(data, y)
+#     end
+#     return data
+# end
+#
+# """
+#     get_network_field(W::WeatherNetwork, field::Symbol)
+#
+# This function returns an array of specified WeatherNetwork field.
+# """
+# function get_network_field(W::WeatherNetwork, field::Symbol)
+#     data = []
+#     for i=1:length(W)
+#         y = values(getfield(W[i], field))
+#         push!(data, y)
+#     end
+#     return data
+# end
+#
+# """
+#     plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
+#
+# This function plots a weather station on a map.
+# """
+# function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String="", filename::String="")
+#     # Empty-map generator
+#     status, fig, ax, m = mapclimgrid(region=reg)
+#
+#     # Plot weather station on the empty map
+#     lat = W.lat
+#     lon = W.lon
+#     x, y = m(lon, lat)
+#     cs = m.scatter(x, y)
+#     #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
+#
+#     # Title
+#     ClimateTools.title(titlestr)
+#
+#     # Save to "filename" if not empty
+#     if !isempty(filename)
+#         PyPlot.savefig(filename, dpi=300)
+#     end
+# end
+#
+# """
+#     plotweatherstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
+#
+# This function plots WeatherNetwork on a map.
+# """
+# function plotweatherstation(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
+#     # Empty-map generator
+#     status, fig, ax, m = mapclimgrid(region=reg)
+#
+#     # Plot weather network on the empty map
+#     lon, lat = ClimateTools.getnetworkcoords(W)
+#     x, y = m(lon, lat)
+#     cs = m.scatter(x, y)
+#     #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
+#
+#     # Title
+#     ClimateTools.title(titlestr)
+#
+#     # Save to "filename" if not empty
+#     if !isempty(filename)
+#         PyPlot.savefig(filename, dpi=300)
+#     end
+# end
+#
+# """
+#     plotweatherstation_data(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
+#
+# This function plots data from WeatherNetwork on a map.
+# """
+# function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
+#     # Empty-map generator
+#     status, fig, ax, m = mapclimgrid(region=reg)
+#
+#     # Plot each weather station and its associated data
+#     lon, lat = ClimateTools.getnetworkcoords(W)
+#     x, y = m(lon, lat)
+#     cs = m.scatter(x, y, c=data)
+#     cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=cs_label)
+#
+#     # Title
+#     ClimateTools.title(titlestr)
+#
+#     # Save to "filename" if not empty
+#     if !isempty(filename)
+#         ClimateTools.PyPlot.savefig(filename, dpi=300)
+#     end
+# end
