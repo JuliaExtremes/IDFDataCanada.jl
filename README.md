@@ -329,10 +329,10 @@ end
 
 #### WeatherStation 
 
-Plotting of `WeatherStation` data can be done using `plotweatherstation`.
+Plotting of `WeatherStation` data can be done using `plot`.
 
 ```julia
-plotweatherstation(W::WeatherStation)
+plot(W::WeatherStation; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
 ```
 **Example**
 
@@ -342,10 +342,10 @@ Plotting the 24-hour annual maximum rainfall data for one Quebec station:
 
 #### WeatherNetwork
 
-Plotting of `WeatherNetwork` data can be done using `plotweathernetwork`.
+Plotting of `WeatherNetwork` data can be done using `plot`.
 
 ```julia
-plotweathernetwork(W::WeatherNetwork)
+plot(W::WeatherNetwork; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
 ```
 
 **Example**
@@ -361,14 +361,12 @@ Plotting the 24-hour annual maximum rainfall data for five Quebec stations:
 Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
 
 ```julia
-plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
+mapweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
 ```
 
 **Example**
 
 Mapping the number of observations for all British Columbia stations:
-
-British Columbia
 
 ![BC map](/images/BC_obs_24h.png)
 
