@@ -60,7 +60,7 @@ function get_idf(fileName::String)
         push!(data_df, data)
     end
     colnames = ["Année","5min","10min","15min","30min","1h","2h","6h","12h","24h"]
-    names!(data_df, Symbol.(colnames))
+    rename!(data_df, Symbol.(colnames))
 
     # Function to replace -99.9 by missing
     val2missing(v,mv) = mv == v ? missing : v
@@ -97,7 +97,7 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     H = String[],   # CSV filename
     I = String[])   # Original filename
     colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
-    names!(info_df, Symbol.(colnames))
+    rename!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
         filename = files[i]
