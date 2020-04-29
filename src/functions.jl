@@ -59,7 +59,7 @@ function get_idf(fileName::String)
         data = split(table1[j])
         push!(data_df, data)
     end
-    colnames = ["Year","5 min","10 min","15 min","30 min","1 h","2 h","6 h","12 h","24 h"]
+    colnames = ["Année","5min","10min","15min","30min","1h","2h","6h","12h","24h"]
     names!(data_df, Symbol.(colnames))
 
     # Function to replace -99.9 by missing
