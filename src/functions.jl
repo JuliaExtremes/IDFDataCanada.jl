@@ -1,4 +1,5 @@
 using DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
+using FTPClient
 
 """
     get_idf(fileName::String)
@@ -171,13 +172,14 @@ function txt2netcdf(input_dir::String, output_dir::String)
     end
 end
 
+#ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/IDF_v3.00_2019_02_27_PE.zip
 """
-    data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
+    data_download(province::String, output_dir::String, format::String; url::String, user::String, pswd::String)
 
 This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. NetCDF format is selected by default.
 """
-function data_download(province::String, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+function data_download(province::String, output_dir::String, format::String="netCDF"; url::String="ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", user::String="client_climate", pswd::String="", file_basename::String="IDF_v3.00_2019_02_27")
 
     # Make the output directory if it doesn't exist :
     try
@@ -198,11 +200,20 @@ function data_download(province::String, output_dir::String, format::String="net
     full_url = "$(url)$(file)"
 
     # Download the data (if not downloaded already) and unzip the data :
-    try
+    if file in glob("*", pwd())
         run(`unzip $(file)`)   # unzip the data
-    catch
-        run(`wget $(full_url)`)   # get the data from server
-        run(`unzip $(file)`)   # unzip the data
+    else
+        ftp_init();
+        ftp = FTP(hostname = url, username = user, password=pswd)
+        dir_content = readdir(ftp);
+        # Check if requested file is in the directory :
+        if file in dir_content
+            download(ftp, file, file)
+            close(ftp)
+            run(`unzip $(file)`)   # unzip the data
+        else
+            throw(error("File not found in the specified directory."))
+        end
     end
 
     input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
@@ -231,11 +242,77 @@ end
 This function downloads IDF data from ECCC client_climate server for multiple provinces
     and generates CSV or netCDF files. NetCDF format is selected by default.
 """
-function data_download(province::Array{String,N} where N, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+function data_download(province::Array{String,N} where N, output_dir::String, format::String="netCDF"; url::String="ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", user::String="client_climate", pswd::String="", file_basename::String="IDF_v3.00_2019_02_27")
     for i in 1:length(province)
-        data_download(province[i], output_dir, format, url=url, file_basename=file_basename)
+        data_download(province[i], output_dir, format, url=url, user=user, pswd=pswd, file_basename=file_basename)
     end
 end
+
+# """
+#     data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
+#
+# This function downloads IDF data from ECCC client_climate server for a province
+#     and generates CSV or netCDF files. NetCDF format is selected by default.
+# """
+# function data_download(province::String, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+#
+#     # Make the output directory if it doesn't exist :
+#     try
+#         mkdir("$(output_dir)/$(province)")
+#     catch
+#         nothing
+#     end
+#
+#     # Make a temp directory for all data :
+#     try
+#         cd("$(output_dir)/temp_data")
+#     catch
+#         mkdir("$(output_dir)/temp_data")
+#         cd("$(output_dir)/temp_data")
+#     end
+#
+#     file = "$(file_basename)_$(province).zip"
+#     full_url = "$(url)$(file)"
+#
+#     # Download the data (if not downloaded already) and unzip the data :
+#     try
+#         run(`unzip $(file)`)   # unzip the data
+#     catch
+#         run(`wget $(full_url)`)   # get the data from server
+#         run(`unzip $(file)`)   # unzip the data
+#     end
+#
+#     input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+#     output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+#
+#     # Convert the data in the specified format (CSV or NetCDF) :
+#     if lowercase(format) == "csv"
+#         txt2csv(input_d, output_d, province)
+#     elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
+#         txt2netcdf(input_d, output_d)
+#     else
+#         throw(error("Format is not valid"))
+#     end
+#
+#     # TODO Fix automatic deletion
+#     # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
+#     #run(`rmdir -r $(input_d)`)  # delete the original data directory
+#     #run(`rm $(file)`)   # delete the zip file
+#
+#     return nothing
+# end
+
+# """
+#     data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+#
+# This function downloads IDF data from ECCC client_climate server for multiple provinces
+#     and generates CSV or netCDF files. NetCDF format is selected by default.
+# """
+# function data_download(province::Array{String,N} where N, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+#     for i in 1:length(province)
+#         data_download(province[i], output_dir, format, url=url, file_basename=file_basename)
+#     end
+# end
 
 """
     netcdf_generator(fileName::String)
