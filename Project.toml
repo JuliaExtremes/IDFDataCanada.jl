@@ -1,9 +1,14 @@
-name = "IDF"
+name = "IDFDataCanada"
+uuid = "b4a361a7-a77f-4d9e-8c40-a407543557fa"
+authors = ["Gabriel Gobeil <gabriel.gobeil199@gmail.com>"]
+version = "0.1.0"
 
 [deps]
+AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-ClimateTools = "4f4ee721-4970-5af2-8560-6c1d960e3231"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Glob = "c27321d9-0574-5035-807b-f59d2c89b15c"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+LibCURL = "b27032c2-a3e7-50c8-80cd-2d36dbcbfd21"
 NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"

@@ -1,4 +1,4 @@
-using DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
+using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
 
 """
     get_idf(fileName::String)
@@ -59,13 +59,13 @@ function get_idf(fileName::String)
         data = split(table1[j])
         push!(data_df, data)
     end
-    colnames = ["Year","5 min","10 min","15 min","30 min","1 h","2 h","6 h","12 h","24 h"]
-    names!(data_df, Symbol.(colnames))
+    colnames = ["Année","5min","10min","15min","30min","1h","2h","6h","12h","24h"]
+    rename!(data_df, Symbol.(colnames))
 
     # Function to replace -99.9 by missing
     val2missing(v,mv) = mv == v ? missing : v
     for a in 1:10
-        data_df[a] = val2missing.(data_df[a],"-99.9")
+        data_df[!,a] = val2missing.(data_df[!,a],"-99.9")
     end
 
     close(f)
@@ -97,7 +97,7 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     H = String[],   # CSV filename
     I = String[])   # Original filename
     colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
-    names!(info_df, Symbol.(colnames))
+    rename!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
         filename = files[i]
@@ -149,21 +149,21 @@ function txt2netcdf(input_dir::String, output_dir::String)
         ds["row_size"][1] = nb_obs
 
         # Time :
-        data[1] = Dates.DateTime.(parse.(Int, data[1])) # Convert years to Date format
+        data[!,1] = Dates.DateTime.(parse.(Int, data[!,1])) # Convert years to Date format
         units = "days since 2000-01-01 00:00:00"
-        timedata = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
+        timedata = NCDatasets.CFTime.timeencode(data[!,1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
         ds["time"][1:nb_obs] = timedata
 
         # Data from table 1 :
-        ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[2], "NaN"))
-        ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[3], "NaN"))
-        ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[4], "NaN"))
-        ds["max_rainfall_amount_30min"][1:nb_obs] = parse.(Float32, coalesce.(data[5], "NaN"))
-        ds["max_rainfall_amount_1h"][1:nb_obs] = parse.(Float32, coalesce.(data[6], "NaN"))
-        ds["max_rainfall_amount_2h"][1:nb_obs] = parse.(Float32, coalesce.(data[7], "NaN"))
-        ds["max_rainfall_amount_6h"][1:nb_obs] = parse.(Float32, coalesce.(data[8], "NaN"))
-        ds["max_rainfall_amount_12h"][1:nb_obs] = parse.(Float32, coalesce.(data[9], "NaN"))
-        ds["max_rainfall_amount_24h"][1:nb_obs] = parse.(Float32, coalesce.(data[10], "NaN"))
+        ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,2], "NaN"))
+        ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,3], "NaN"))
+        ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,4], "NaN"))
+        ds["max_rainfall_amount_30min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,5], "NaN"))
+        ds["max_rainfall_amount_1h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,6], "NaN"))
+        ds["max_rainfall_amount_2h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,7], "NaN"))
+        ds["max_rainfall_amount_6h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,8], "NaN"))
+        ds["max_rainfall_amount_12h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,9], "NaN"))
+        ds["max_rainfall_amount_24h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,10], "NaN"))
 
         close(ds)
 
@@ -172,19 +172,29 @@ function txt2netcdf(input_dir::String, output_dir::String)
 end
 
 """
-    data_download(province::String, output_dir::String, url::String, file_basename::String, format::String="CSV")
+    data_download(province::String, output_dir::String, format::String; split::Bool, rm_temp::Bool)
 
-This function downloads IDF data from ECCC client_climate server for a province
-    and generates CSV or netCDF files. NetCDF format is selected by default.
+This function downloads IDF data from ECCC Google Drive directory for a province
+    and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::String, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+    # Data version
+    file_basename = "IDF_v3.10_2020_03_27"
 
-    # Make the output directory if it doesn't exist :
-    try
-        mkdir("$(output_dir)/$(province)")
-    catch
-        nothing
-    end
+    # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
+    prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
+                "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
+                "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
+                "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
+                "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
+                "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
+                "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
+                "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
+                "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
+                "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
+                "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
+                "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
+                "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
     # Make a temp directory for all data :
     try
@@ -195,18 +205,35 @@ function data_download(province::String, output_dir::String, format::String="net
     end
 
     file = "$(file_basename)_$(province).zip"
-    full_url = "$(url)$(file)"
+    ID = prov_ID[province]
+    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
 
     # Download the data (if not downloaded already) and unzip the data :
-    try
+    if file in glob("*", pwd())
         run(`unzip $(file)`)   # unzip the data
-    catch
-        run(`wget $(full_url)`)   # get the data from server
-        run(`unzip $(file)`)   # unzip the data
+    else
+        drive_download(url, pwd());
+        #sleep(1)
+        try
+            run(`unzip $(file)`)   # unzip the data
+            cd("$(output_dir)")
+        catch
+            throw(error("Unable to unzip the data file."))
+        end
     end
 
     input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
-    output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+    if split
+        # Make the output directory if it doesn't exist :
+        try
+            mkdir("$(output_dir)/$(province)")
+        catch
+            nothing
+        end
+        output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+    else
+        output_d = "$(output_dir)/"
+    end
 
     # Convert the data in the specified format (CSV or NetCDF) :
     if lowercase(format) == "csv"
@@ -217,10 +244,10 @@ function data_download(province::String, output_dir::String, format::String="net
         throw(error("Format is not valid"))
     end
 
-    # TODO Fix automatic deletion
-    # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
-    #run(`rmdir -r $(input_d)`)  # delete the original data directory
-    #run(`rm $(file)`)   # delete the zip file
+    # Automatic deletion
+    if rm_temp
+        rm("$(output_dir)/temp_data", recursive=true)
+    end
 
     return nothing
 end
@@ -228,12 +255,12 @@ end
 """
     data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
 
-This function downloads IDF data from ECCC client_climate server for multiple provinces
-    and generates CSV or netCDF files. NetCDF format is selected by default.
+This function downloads IDF data from ECCC Google Drive directory for multiple provinces
+    and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::Array{String,N} where N, output_dir::String, format::String="netCDF"; url::String="ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/", file_basename::String="IDF_v3.00_2019_02_27")
+function data_download(province::Array{String,N} where N, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     for i in 1:length(province)
-        data_download(province[i], output_dir, format, url=url, file_basename=file_basename)
+        data_download(province[i], output_dir, format, split=split, rm_temp=rm_temp)
     end
 end
 
@@ -349,109 +376,27 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
+"""
+    drive_download(url::String, localdir::String)
 
-##########################################################################################
-#### Other functions #####################################################################
-##########################################################################################
-# using ClimateTools
-#
-# """
-#     network_calculator(W::WeatherNetwork, any_func::Function)
-#
-# This function applies any function over WeatherNetwork data and returns an array of computed data.
-# """
-# function network_calculator(W::WeatherNetwork, any_func::Function)
-#     data = []
-#     for i=1:length(W)
-#         y = any_func(W[i].data)
-#         push!(data, y)
-#     end
-#     return data
-# end
-#
-# """
-#     get_network_field(W::WeatherNetwork, field::Symbol)
-#
-# This function returns an array of specified WeatherNetwork field.
-# """
-# function get_network_field(W::WeatherNetwork, field::Symbol)
-#     data = []
-#     for i=1:length(W)
-#         y = values(getfield(W[i], field))
-#         push!(data, y)
-#     end
-#     return data
-# end
-#
-# """
-#     plotweatherstation(C::WeatherStation; reg="canada", titlestr::String="", filename::String="")
-#
-# This function plots a weather station on a map.
-# """
-# function plotweatherstation(W::WeatherStation; reg="canada", titlestr::String="", filename::String="")
-#     # Empty-map generator
-#     status, fig, ax, m = mapclimgrid(region=reg)
-#
-#     # Plot weather station on the empty map
-#     lat = W.lat
-#     lon = W.lon
-#     x, y = m(lon, lat)
-#     cs = m.scatter(x, y)
-#     #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
-#
-#     # Title
-#     ClimateTools.title(titlestr)
-#
-#     # Save to "filename" if not empty
-#     if !isempty(filename)
-#         PyPlot.savefig(filename, dpi=300)
-#     end
-# end
-#
-# """
-#     plotweatherstation(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-#
-# This function plots WeatherNetwork on a map.
-# """
-# function plotweatherstation(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-#     # Empty-map generator
-#     status, fig, ax, m = mapclimgrid(region=reg)
-#
-#     # Plot weather network on the empty map
-#     lon, lat = ClimateTools.getnetworkcoords(W)
-#     x, y = m(lon, lat)
-#     cs = m.scatter(x, y)
-#     #cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1)
-#
-#     # Title
-#     ClimateTools.title(titlestr)
-#
-#     # Save to "filename" if not empty
-#     if !isempty(filename)
-#         PyPlot.savefig(filename, dpi=300)
-#     end
-# end
-#
-# """
-#     plotweatherstation_data(C::WeatherNetwork; reg="canada", titlestr::String="", filename::String="")
-#
-# This function plots data from WeatherNetwork on a map.
-# """
-# function plotweatherstation_data(W::WeatherNetwork, data; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
-#     # Empty-map generator
-#     status, fig, ax, m = mapclimgrid(region=reg)
-#
-#     # Plot each weather station and its associated data
-#     lon, lat = ClimateTools.getnetworkcoords(W)
-#     x, y = m(lon, lat)
-#     cs = m.scatter(x, y, c=data)
-#     cbar = ClimateTools.colorbar(cs, orientation = "vertical", shrink = 1, label=cs_label)
-#
-#     # Title
-#     ClimateTools.title(titlestr)
-#
-#     # Save to "filename" if not empty
-#     if !isempty(filename)
-#         ClimateTools.PyPlot.savefig(filename, dpi=300)
-#     end
-# end
+This function downloads zip files from Google Drive using HTTP.
+"""
+function drive_download(url::String, localdir::String)
+    HTTP.open("GET", url) do stream
+        r = HTTP.startread(stream);
+        content_disp = HTTP.header(r, "Content-Disposition");
+        m = match(r"filename=\\\"(.*)\\\"", content_disp);
+        filename = ""
+        if m !== nothing
+            filename = m.match[11:end-1]
+            println(filename)
+            filepath = joinpath(localdir, filename)
+            #downloaded_bytes = 0
+            Base.open(filepath, "w") do fh
+                while(!eof(stream))
+                    write(fh, readavailable(stream));
+                end
+            end
+        end
+    end
+end

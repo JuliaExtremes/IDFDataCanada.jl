@@ -1,4 +1,4 @@
-# IDF-data 🇨🇦
+# IDFDataCanada.jl 🇨🇦
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 A set of methods to get ECCC IDF data from .txt files.
@@ -9,7 +9,7 @@ A set of methods to get ECCC IDF data from .txt files.
 
 ## Overview
 
-Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
+Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDFDataCanada.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC's [Google Drive](https://drive.google.com/open?id=1VsJnWGfz2NTzT4orgTH1RL3yzZcrdYTC).
 
 ## Required dependencies 
 
@@ -19,22 +19,22 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 * DataFrames
 * Dates
 * Glob
+* HTTP
+* LibCURL
 * NCDatasets
-* ClimateTools (not required for data extraction)
 
 ### Command-line utilities
 
 * unzip
-* wget
 
 ## Getting started
 
 ### Installation
 
-*IDF-data* is not (yet) a registered package, so installing it directly with Julia's builtin package manager (Pkg) is not possible. Thus, there is two ways to use the package after having it cloned:
+*IDFDataCanada* is not (yet) a registered package, so installing it directly with Julia's builtin package manager (Pkg) is not possible. Thus, there is two ways to use the package after having it cloned:
 
 ```
-$ git clone https://github.com/houton199/IDF-data.git /path/to/dir/
+$ git clone https://github.com/houton199/IDFDataCanada.git /path/to/dir/
 ```
 
 #### 1) Add the module to Julia's loading path:
@@ -42,8 +42,8 @@ $ git clone https://github.com/houton199/IDF-data.git /path/to/dir/
 If all the required dependencies are installed, one can simply add the module to Julia's loading path before using it:
 
 ```julia
-push!(LOAD_PATH, "/path/to/dir/IDF-data/src/")
-using IDF
+push!(LOAD_PATH, "/path/to/dir/IDFDataCanada/src/")
+using IDFDataCanada
 ```
 
 #### 2) Activate the environnement and install the required dependencies:
@@ -51,35 +51,26 @@ using IDF
 If all the required dependencies are **not** installed, running Pkg's *instantiate* will download all the required dependencies:
 
 ```
-$ cd /path/to/dir/IDF-data
+$ cd /path/to/dir/IDFDataCanada
 $ julia
 pkg> activate .
 pkg> instantiate
 ```
 
 ```julia
-using IDF
+using IDFDataCanada
 ```
 
 ### Extract data
 
-There is two ways to execute data extraction. The first one is to call the `data_download` function directly by providing the province code (ex: "QC" for Quebec), the output directory (must be an existing folder) and the format (CSV or netCDF).
-
-The url (**ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/**) and the basename of the files (**IDF_v3.00_2019_02_27**) are set by default but can be entered as keyword arguments (as they will change with data update).
+The key feature of *IDFDataCanada* is the `data_download` function. It can be used directly by providing the province code (ex: "QC" for Quebec), the output directory (must be an existing folder) and the format (CSV or netCDF). CSV format is selected by default. The two keyword arguments, split and rm_temp, can be set to extract data in a subfolder for each province or to keep the temporarily downloaded zip files.
 
 ```julia
-data_download(province, output_dir, format; url, basename)
+data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
 ```
 
 `data_download` will create output files of the specified format in the output directory.
 
-
-The second way is to call the `extract.jl` script.
-```console
-julia extract.jl
-```
-
-The extract script will ask you which province data you want to download, its output directory and its format. It will automatically download the data and create output files of the specified format in the output directory.
 
 ### Format
 
@@ -177,7 +168,7 @@ variables:
 
 By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1: Annual Maximum (mm).
 
-|Year  |5 min   |10 min  |15 min  |30 min  |1 h      |2 h      |6 h    |12 h   |24 h   |
+|Année  |5min   |10min  |15min  |30min  |1h      |2h      |6h    |12h   |24h   |
 |:-----|:------:|:------:|:------:|:------:|:-------:|:-------:|:-----:|:-----:|-----:|
 |      |        |        |        |        |         |         |       |       |      |
 
@@ -196,60 +187,67 @@ Let's say someone wants to extract IDF data for Prince Edward Island (PE) in Net
 ```julia
 julia> using IDF
 julia> data_download("PE", pwd(), "netcdf")
-unzip:  cannot find or open IDF_v3.00_2019_02_27_PE.zip, IDF_v3.00_2019_02_27_PE.zip.zip or IDF_v3.00_2019_02_27_PE.zip.ZIP.
---2019-08-20 10:16:55--  ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/IDF_v3.00_2019_02_27_PE.zip
-           => « IDF_v3.00_2019_02_27_PE.zip »
-Résolution de ftp.tor.ec.gc.ca (ftp.tor.ec.gc.ca)… 199.212.19.56
-Connexion à ftp.tor.ec.gc.ca (ftp.tor.ec.gc.ca)|199.212.19.56|:21… connecté.
-Ouverture de session en tant que client_climate… Session établie.
-==> SYST ... terminé.    ==> PWD ... terminé.
-==> TYPE I ... terminé.  ==> CWD (1) /Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers ... terminé.
-==> SIZE IDF_v3.00_2019_02_27_PE.zip ... 2899710
-==> PASV ... terminé.    ==> RETR IDF_v3.00_2019_02_27_PE.zip ... terminé.
-Taille : 2899710 (2,8M) (non certifiée)
-
-IDF_v3.00_2019_02_2 100%[===================>]   2,76M  3,26MB/s    ds 0,8s    
-
-2019-08-20 10:16:56 (3,26 MB/s) - « IDF_v3.00_2019_02_27_PE.zip » sauvegardé [2899710]
-
-Archive:  IDF_v3.00_2019_02_27_PE.zip
-   creating: IDF_v3.00_2019_02_27_PE/
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.txt  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_qq.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_qq.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_r.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_r.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_t.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A_t.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE.txt  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_qq.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_qq.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_r.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_r.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_t.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300596_SUMMERSIDE_t.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS.txt  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_r.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_r.png  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_t.pdf  
-  inflating: IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_830P001_HARRINGTON_CDA_CS_t.png  
+IDF_v3.10_2020_03_27_PE.zip
+Archive:  IDF_v3.10_2020_03_27_PE.zip
+   creating: IDF_v3.10_2020_03_27_PE/
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_t.png  
 CHARLOTTETOWN A
 8300301.nc : OK
+ST. PETERS
+8300562.nc : OK
 SUMMERSIDE
 8300596.nc : OK
+MAPLE PLAINS
+8305500.nc : OK
 HARRINGTON CDA CS
 830P001.nc : OK
 ```
 
-Three netCDF files (8300301.nc, 8300596.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory.
+Five netCDF files (8300301.nc, 8300562.nc, 8300596.nc, 8305500.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory.
 
 ### CSV
 
@@ -271,110 +269,9 @@ Three CSV files (8300301.csv, 8300596.csv and 830P001.csv) corresponding to the 
  
 
 
-## Data usage
-
-### Reading station data NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
-
-Methods are currently in development to load weather station netCDF files with `ClimateTools` in the `weather_station` branch. 
-
-#### Installation
-
-To install ClimateTools, follow the [installation guide](https://balinus.github.io/ClimateTools.jl/stable/installation/) and once the python dependencies are properly installed, you can then install the weather_station branch of ClimateTools:
-
-```julia
-pkg> add ClimateTools#weather_station
-```
-
-#### WeatherStation
-
-The `WeatherStation` is a in-memory representation of a CF-compliant netCDF file for station data.
-
-```julia
-struct WeatherStation{A <: AxisArray}
-    data::A
-    lon::Real
-    lat::Real
-    alt::Real
-    stationID::String # Alphanumerical ID of the weather station
-    stationName::String # Name of the weather station
-    filename::String # Path of the original file
-    dataunits::String # Celsius, kelvin, etc.
-    lonunits::String # Longitude coordinate unit
-    latunits::String # Latitude coordinate unit
-    altunits::String # Altitude coordinate unit
-    variable::String # Type of variable
-    typeofvar::String # Variable type (e.g. tasmax, tasmin, pr)
-    typeofcal::String # Calendar type
-    timeattrib::Dict # Time attributes (e.g. days since ... )
-    varattribs::Dict # Variable attributes
-    globalattribs::Dict # Global attributes
-end
-```
-
-#### WeatherNetwork
-
-The `WeatherNetwork` is a in-memory representation of a network of `WeatherStation`.
-
-```julia
-struct WeatherNetwork{A <: Array{WeatherStation}}
-    data::A
-    stationID::Array{String}
-end
-```
-
-
-## Visualization
-
-### Plotting
-
-#### WeatherStation 
-
-Plotting of `WeatherStation` data can be done using `plot`.
-
-```julia
-plot(W::WeatherStation; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
-```
-**Example**
-
-Plotting the 24-hour annual maximum rainfall data for one Quebec station:
-
-![fig1: Plotting of WS](/images/fig1.png)
-
-#### WeatherNetwork
-
-Plotting of `WeatherNetwork` data can be done using `plot`.
-
-```julia
-plot(W::WeatherNetwork; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
-```
-
-**Example**
-
-Plotting the 24-hour annual maximum rainfall data for five Quebec stations:
-
-![fig3: Plotting of WN](/images/fig3.png)
-
-### Mapping
-
-#### WeatherNetwork
-
-Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
-
-```julia
-mapweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
-```
-
-**Example**
-
-Mapping the number of observations for all British Columbia stations:
-
-![BC map](/images/BC_obs_24h.png)
-
-
 ## TO-DO
 
 * Add tests 
-* Automatic deletion of .zip files 
 * Add ECCC weather station data (*work in progress*)
 
 
