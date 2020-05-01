@@ -1,4 +1,4 @@
-using DataFrames, Dates, Glob, NCDatasets, CSV, AxisArrays
+using DataFrames, Dates, Glob, HTTP, NCDatasets, CSV, AxisArrays
 using FTPClient
 
 """
@@ -173,6 +173,14 @@ function txt2netcdf(input_dir::String, output_dir::String)
 end
 
 #ftp://client_climate@ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/IDF_v3.00_2019_02_27_PE.zip
+
+GET https://www.googleapis.com/drive/v3/files/1OiY24eDSYBmKr0HTkUJ97m8C1Pwbyg1O?key=[YOUR_API_KEY] HTTP/1.1
+'https://www.googleapis.com/drive/v3/files/1OiY24eDSYBmKr0HTkUJ97m8C1Pwbyg1O?key=AIzaSyCvIk5ZQkNiqfTNrNOOTPuUgPaYXOOfkSw'
+
+
+#https://www.googleapis.com/drive/v3/files/1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z
+#https://drive.google.com/file/d/1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z
+#HTTP.request("GET","https://drive.google.com/file/d/1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z")
 """
     data_download(province::String, output_dir::String, format::String; url::String, user::String, pswd::String)
 
@@ -426,6 +434,31 @@ function netcdf_generator(fileName::String)
     close(ds)
 end
 
+"""
+    drive_download(url::String, localdir::String)
+
+This function downloads a zip file from Google Drive using HTTP.
+"""
+function drive_download(url::String, localdir::String)
+    HTTP.open("GET", url) do stream
+        resp = HTTP.startread(stream);
+        content_disp = HTTP.header(resp, "Content-Disposition");
+        m = match(r"filename=\\\"(.*)\\\"", content_disp);
+        filename = ""
+        if m !== nothing
+            filename = m.match[11:end-1]
+            println(filename)
+            filepath = joinpath(localdir, filename)
+            #downloaded_bytes = 0
+            Base.open(filepath, "w") do fh
+                while(!eof(stream))
+                    #downloaded_bytes += write(fh, readavailable(stream));
+                    write(fh, readavailable(stream));
+                end
+            end
+        end
+    end
+end
 
 ##########################################################################################
 #### Other functions #####################################################################
