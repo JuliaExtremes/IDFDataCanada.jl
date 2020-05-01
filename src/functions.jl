@@ -65,7 +65,7 @@ function get_idf(fileName::String)
     # Function to replace -99.9 by missing
     val2missing(v,mv) = mv == v ? missing : v
     for a in 1:10
-        data_df[a] = val2missing.(data_df[a],"-99.9")
+        data_df[!,a] = val2missing.(data_df[!,a],"-99.9")
     end
 
     close(f)
@@ -149,21 +149,21 @@ function txt2netcdf(input_dir::String, output_dir::String)
         ds["row_size"][1] = nb_obs
 
         # Time :
-        data[1] = Dates.DateTime.(parse.(Int, data[1])) # Convert years to Date format
+        data[!,1] = Dates.DateTime.(parse.(Int, data[!,1])) # Convert years to Date format
         units = "days since 2000-01-01 00:00:00"
-        timedata = NCDatasets.CFTime.timeencode(data[1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
+        timedata = NCDatasets.CFTime.timeencode(data[!,1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
         ds["time"][1:nb_obs] = timedata
 
         # Data from table 1 :
-        ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[2], "NaN"))
-        ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[3], "NaN"))
-        ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[4], "NaN"))
-        ds["max_rainfall_amount_30min"][1:nb_obs] = parse.(Float32, coalesce.(data[5], "NaN"))
-        ds["max_rainfall_amount_1h"][1:nb_obs] = parse.(Float32, coalesce.(data[6], "NaN"))
-        ds["max_rainfall_amount_2h"][1:nb_obs] = parse.(Float32, coalesce.(data[7], "NaN"))
-        ds["max_rainfall_amount_6h"][1:nb_obs] = parse.(Float32, coalesce.(data[8], "NaN"))
-        ds["max_rainfall_amount_12h"][1:nb_obs] = parse.(Float32, coalesce.(data[9], "NaN"))
-        ds["max_rainfall_amount_24h"][1:nb_obs] = parse.(Float32, coalesce.(data[10], "NaN"))
+        ds["max_rainfall_amount_5min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,2], "NaN"))
+        ds["max_rainfall_amount_10min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,3], "NaN"))
+        ds["max_rainfall_amount_15min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,4], "NaN"))
+        ds["max_rainfall_amount_30min"][1:nb_obs] = parse.(Float32, coalesce.(data[!,5], "NaN"))
+        ds["max_rainfall_amount_1h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,6], "NaN"))
+        ds["max_rainfall_amount_2h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,7], "NaN"))
+        ds["max_rainfall_amount_6h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,8], "NaN"))
+        ds["max_rainfall_amount_12h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,9], "NaN"))
+        ds["max_rainfall_amount_24h"][1:nb_obs] = parse.(Float32, coalesce.(data[!,10], "NaN"))
 
         close(ds)
 
