@@ -174,15 +174,16 @@ end
 
 
 """
-    data_download(province::String, output_dir::String, format::String; url::String, user::String, pswd::String)
+    data_download(province::String, output_dir::String, format::String; split::Bool, rm_temp::Bool)
 
-This function downloads IDF data from ECCC client_climate server for a province
-    and generates CSV or netCDF files. NetCDF format is selected by default.
+This function downloads IDF data from ECCC Google Drive directory for a province
+    and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+    # Data version
     file_basename = "IDF_v3.10_2020_03_27"
 
-    # Provinces ID keys for IDF_v3.10_2020_03_27
+    # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
     prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
                 "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
                 "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
@@ -207,7 +208,7 @@ function data_download(province::String, output_dir::String, format::String="csv
 
     file = "$(file_basename)_$(province).zip"
     ID = prov_ID[province]
-    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";  # PE pour le test, à changer
+    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
 
     # Download the data (if not downloaded already) and unzip the data :
     if file in glob("*", pwd())
@@ -251,6 +252,18 @@ function data_download(province::String, output_dir::String, format::String="csv
     end
 
     return nothing
+end
+
+"""
+    data_download(province::Array{String}, output_dir::String, url::String, file_basename::String)
+
+This function downloads IDF data from ECCC Google Drive directory for multiple provinces
+    and generates CSV or netCDF files. CSV format is selected by default.
+"""
+function data_download(province::Array{String,N} where N, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+    for i in 1:length(province)
+        data_download(province[i], output_dir, format, split=split, rm_temp=rm_temp)
+    end
 end
 
 
