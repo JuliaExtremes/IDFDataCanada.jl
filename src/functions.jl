@@ -1,5 +1,4 @@
-using DataFrames, Dates, Glob, HTTP, NCDatasets, CSV, AxisArrays
-using LibCURL
+using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
 
 """
     get_idf(fileName::String)
@@ -384,8 +383,8 @@ This function downloads zip files from Google Drive using HTTP.
 """
 function drive_download(url::String, localdir::String)
     HTTP.open("GET", url) do stream
-        resp = HTTP.startread(stream);
-        content_disp = HTTP.header(resp, "Content-Disposition");
+        r = HTTP.startread(stream);
+        content_disp = HTTP.header(r, "Content-Disposition");
         m = match(r"filename=\\\"(.*)\\\"", content_disp);
         filename = ""
         if m !== nothing
