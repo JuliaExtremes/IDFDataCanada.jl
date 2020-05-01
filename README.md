@@ -1,4 +1,4 @@
-# IDF-data 🇨🇦
+# IDFDataCanada.jl 🇨🇦
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
 A set of methods to get ECCC IDF data from .txt files.
@@ -9,7 +9,7 @@ A set of methods to get ECCC IDF data from .txt files.
 
 ## Overview
 
-Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDF.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC Client Climate server.
+Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Environment and Climate Change Canada (ECCC) are available for download in .txt format, a format that can be less convinient to use. IDFDataCanada.jl offers methods to get ECCC IDF data in NetCDF (.nc) or CSV (.csv) format automatically from the .txt files from ECCC's [Google Drive](https://drive.google.com/open?id=1VsJnWGfz2NTzT4orgTH1RL3yzZcrdYTC).
 
 ## Required dependencies 
 
@@ -19,13 +19,13 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 * DataFrames
 * Dates
 * Glob
+* HTTP
+* LibCURL
 * NCDatasets
-* ClimateTools (not required for data extraction)
 
 ### Command-line utilities
 
 * unzip
-* wget
 
 ## Getting started
 
@@ -271,110 +271,9 @@ Three CSV files (8300301.csv, 8300596.csv and 830P001.csv) corresponding to the 
  
 
 
-## Data usage
-
-### Reading station data NetCDF files with [ClimateTools](https://github.com/Balinus/ClimateTools.jl)
-
-Methods are currently in development to load weather station netCDF files with `ClimateTools` in the `weather_station` branch. 
-
-#### Installation
-
-To install ClimateTools, follow the [installation guide](https://balinus.github.io/ClimateTools.jl/stable/installation/) and once the python dependencies are properly installed, you can then install the weather_station branch of ClimateTools:
-
-```julia
-pkg> add ClimateTools#weather_station
-```
-
-#### WeatherStation
-
-The `WeatherStation` is a in-memory representation of a CF-compliant netCDF file for station data.
-
-```julia
-struct WeatherStation{A <: AxisArray}
-    data::A
-    lon::Real
-    lat::Real
-    alt::Real
-    stationID::String # Alphanumerical ID of the weather station
-    stationName::String # Name of the weather station
-    filename::String # Path of the original file
-    dataunits::String # Celsius, kelvin, etc.
-    lonunits::String # Longitude coordinate unit
-    latunits::String # Latitude coordinate unit
-    altunits::String # Altitude coordinate unit
-    variable::String # Type of variable
-    typeofvar::String # Variable type (e.g. tasmax, tasmin, pr)
-    typeofcal::String # Calendar type
-    timeattrib::Dict # Time attributes (e.g. days since ... )
-    varattribs::Dict # Variable attributes
-    globalattribs::Dict # Global attributes
-end
-```
-
-#### WeatherNetwork
-
-The `WeatherNetwork` is a in-memory representation of a network of `WeatherStation`.
-
-```julia
-struct WeatherNetwork{A <: Array{WeatherStation}}
-    data::A
-    stationID::Array{String}
-end
-```
-
-
-## Visualization
-
-### Plotting
-
-#### WeatherStation 
-
-Plotting of `WeatherStation` data can be done using `plot`.
-
-```julia
-plot(W::WeatherStation; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
-```
-**Example**
-
-Plotting the 24-hour annual maximum rainfall data for one Quebec station:
-
-![fig1: Plotting of WS](/images/fig1.png)
-
-#### WeatherNetwork
-
-Plotting of `WeatherNetwork` data can be done using `plot`.
-
-```julia
-plot(W::WeatherNetwork; level=1, start_date::Tuple=(Inf,), end_date::Tuple=(Inf,), titlestr::String="", gridfig::Bool=true, label::String="", lw=1.5, linestyle="-", filename::String="")
-```
-
-**Example**
-
-Plotting the 24-hour annual maximum rainfall data for five Quebec stations:
-
-![fig3: Plotting of WN](/images/fig3.png)
-
-### Mapping
-
-#### WeatherNetwork
-
-Mapping `WeatherNetwork` data can be done using `mapweathernetwork`.
-
-```julia
-mapweathernetwork(W::WeatherNetwork; reg="canada", titlestr::String="", filename::String="", cs_label::String="")
-```
-
-**Example**
-
-Mapping the number of observations for all British Columbia stations:
-
-![BC map](/images/BC_obs_24h.png)
-
-
 ## TO-DO
 
 * Add tests 
-* Automatic deletion of .zip files 
 * Add ECCC weather station data (*work in progress*)
 
 
