@@ -1,5 +1,5 @@
 using DataFrames, Dates, Glob, HTTP, NCDatasets, CSV, AxisArrays
-using FTPClient
+using LibCURL
 
 """
     get_idf(fileName::String)
@@ -179,30 +179,23 @@ end
 This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. NetCDF format is selected by default.
 """
-function data_download(province::String, output_dir::String, format::String="netCDF")
+function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false)
     file_basename = "IDF_v3.10_2020_03_27"
 
-    # Provinces ID keys : à mettre en dictionnaire éventuellement...
-    ID_YT = "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1"
-    ID_SK = "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk"
-    ID_QC = "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J"
-    ID_PE = "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z"
-    ID_ON = "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l"
-    ID_NU = "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0"
-    ID_NT = "13830mUbofWR5zIsB5w-32G5HOU5507LW"
-    ID_NS = "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ"
-    ID_NL = "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ"
-    ID_NB = "1obZokf_BMWXkmXcq21S0vWZFInroHg3T"
-    ID_MB = "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV"
-    ID_BC = "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu"
-    ID_AB = "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD"
-
-    # Make the output directory if it doesn't exist :
-    try
-        mkdir("$(output_dir)/$(province)")
-    catch
-        nothing
-    end
+    # Provinces ID keys for IDF_v3.10_2020_03_27
+    prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
+                "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
+                "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
+                "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
+                "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
+                "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
+                "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
+                "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
+                "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
+                "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
+                "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
+                "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
+                "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
     # Make a temp directory for all data :
     try
@@ -213,23 +206,35 @@ function data_download(province::String, output_dir::String, format::String="net
     end
 
     file = "$(file_basename)_$(province).zip"
-    url = "https://drive.google.com/uc?export=download&id=$(ID_PE)&alt=media";  # PE pour le test, à changer
+    ID = prov_ID[province]
+    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";  # PE pour le test, à changer
 
     # Download the data (if not downloaded already) and unzip the data :
     if file in glob("*", pwd())
         run(`unzip $(file)`)   # unzip the data
     else
         drive_download(url, pwd());
-        sleep(1)
+        #sleep(1)
         try
             run(`unzip $(file)`)   # unzip the data
+            cd("$(output_dir)")
         catch
             throw(error("Unable to unzip the data file."))
         end
     end
 
     input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
-    output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+    if split
+        # Make the output directory if it doesn't exist :
+        try
+            mkdir("$(output_dir)/$(province)")
+        catch
+            nothing
+        end
+        output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+    else
+        output_d = "$(output_dir)/"
+    end
 
     # Convert the data in the specified format (CSV or NetCDF) :
     if lowercase(format) == "csv"
