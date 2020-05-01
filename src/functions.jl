@@ -179,7 +179,7 @@ end
 This function downloads IDF data from ECCC client_climate server for a province
     and generates CSV or netCDF files. NetCDF format is selected by default.
 """
-function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false)
+function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     file_basename = "IDF_v3.10_2020_03_27"
 
     # Provinces ID keys for IDF_v3.10_2020_03_27
@@ -245,10 +245,10 @@ function data_download(province::String, output_dir::String, format::String="csv
         throw(error("Format is not valid"))
     end
 
-    # TODO Fix automatic deletion
-    # Automatic deletion (still doesn't work -> msg error : "rmdir: illegal option -- r")
-    #run(`rmdir -r $(input_d)`)  # delete the original data directory
-    #run(`rm $(file)`)   # delete the zip file
+    # Automatic deletion
+    if rm_temp
+        rm("$(output_dir)/temp_data", recursive=true)
+    end
 
     return nothing
 end
