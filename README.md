@@ -31,41 +31,19 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 
 ### Installation
 
-*IDFDataCanada* is not (yet) a registered package, so installing it directly with Julia's builtin package manager (Pkg) is not possible. Thus, there is two ways to use the package after having it cloned:
+*IDFDataCanada* is now a registered package. It can be installed using  Julia's builtin package manager:
 
 ```
-$ git clone https://github.com/houton199/IDFDataCanada.git /path/to/dir/
+Pkg> add IDFDataCanada
 ```
 
-#### 1) Add the module to Julia's loading path:
-
-If all the required dependencies are installed, one can simply add the module to Julia's loading path before using it:
-
-```julia
-push!(LOAD_PATH, "/path/to/dir/IDFDataCanada/src/")
-using IDFDataCanada
-```
-
-#### 2) Activate the environnement and install the required dependencies:
-
-If all the required dependencies are **not** installed, running Pkg's *instantiate* will download all the required dependencies:
-
-```
-$ cd /path/to/dir/IDFDataCanada
-$ julia
-pkg> activate .
-pkg> instantiate
-```
-
-```julia
-using IDFDataCanada
-```
 
 ### Extract data
 
 The key feature of *IDFDataCanada* is the `data_download` function. It can be used directly by providing the province code (ex: "QC" for Quebec), the output directory (must be an existing folder) and the format (CSV or netCDF). CSV format is selected by default. The two keyword arguments, split and rm_temp, can be set to extract data in a subfolder for each province or to keep the temporarily downloaded zip files.
 
 ```julia
+using IDFDataCanada
 data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
 ```
 
