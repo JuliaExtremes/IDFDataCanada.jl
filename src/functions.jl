@@ -1,4 +1,5 @@
 using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
+using FTPClient
 
 """
     get_idf(fileName::String)
@@ -179,22 +180,26 @@ This function downloads IDF data from ECCC Google Drive directory for a province
 """
 function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     # Data version
-    file_basename = "IDF_v3.10_2020_03_27"
+    #file_basename = "IDF_v3.10_2020_03_27"
+    file_basename = "IDF_v3.00_2019_02_27"
+    url = "ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/"
+    user = "client_climate"
+    pswd = ""
 
     # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
-    prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
-                "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
-                "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
-                "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
-                "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
-                "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
-                "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
-                "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
-                "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
-                "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
-                "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
-                "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
-                "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
+    # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
+    #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
+    #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
+    #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
+    #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
+    #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
+    #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
+    #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
+    #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
+    #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
+    #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
+    #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
+    #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
     # Make a temp directory for all data :
     try
@@ -205,21 +210,32 @@ function data_download(province::String, output_dir::String, format::String="csv
     end
 
     file = "$(file_basename)_$(province).zip"
-    ID = prov_ID[province]
-    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
+    #ID = prov_ID[province]
+    #url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
 
     # Download the data (if not downloaded already) and unzip the data :
     if file in glob("*", pwd())
         run(`unzip $(file)`)   # unzip the data
     else
-        drive_download(url, pwd());
-        #sleep(1)
-        try
+        ftp_init();
+        ftp = FTP(hostname = url, username = user, password=pswd)
+        dir_content = readdir(ftp);
+        # Check if requested file is in the directory :
+        if file in dir_content
+            download(ftp, file, file)
+            close(ftp)
             run(`unzip $(file)`)   # unzip the data
             cd("$(output_dir)")
-        catch
-            throw(error("Unable to unzip the data file."))
+        else
+            throw(error("File not found in the specified directory."))
         end
+        #drive_download(url, pwd());
+        #try
+        #    run(`unzip $(file)`)   # unzip the data
+        #    cd("$(output_dir)")
+        #catch
+        #    throw(error("Unable to unzip the data file."))
+        #end
     end
 
     input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
