@@ -96,6 +96,12 @@ git-tree-sha1 = "65dad386e877850e6fce4fc77f60fe75a468ce9d"
 uuid = "da5c29d0-fa7d-589e-88eb-ea29b0a81949"
 version = "0.4.0"
 
+[[FTPClient]]
+deps = ["LibCURL", "URIParser"]
+git-tree-sha1 = "e0617188d5abfb9955663158c95e71ae215f8904"
+uuid = "01fcc997-4f28-56b8-8a06-30002c134abb"
+version = "1.0.1"
+
 [[FilePathsBase]]
 deps = ["Dates", "LinearAlgebra", "Printf", "Test", "UUIDs"]
 git-tree-sha1 = "2cd6e2e7965934f72cb80251f760228e2264bab3"
