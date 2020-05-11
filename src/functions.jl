@@ -1,4 +1,5 @@
 using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
+using FTPClient
 
 """
     get_idf(fileName::String)
@@ -110,8 +111,9 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
         info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
         push!(info_df, info)    # Fill the province station info file
     end
-    output_info = "$(output_dir)/info_stations_$(province).csv"
-    CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
+    #output_info = "$(output_dir)/info_stations_$(province).csv"
+    #CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
+    return info_df
 end
 
 """
@@ -177,78 +179,111 @@ end
 This function downloads IDF data from ECCC Google Drive directory for a province
     and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::String, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+function data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     # Data version
-    file_basename = "IDF_v3.10_2020_03_27"
+    #file_basename = "IDF_v3.10_2020_03_27"
+    file_basename = "IDF_v3.00_2019_02_27"
+    url = "ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/"
+    user = "client_climate"
+    pswd = ""
 
     # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
-    prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
-                "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
-                "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
-                "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
-                "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
-                "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
-                "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
-                "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
-                "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
-                "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
-                "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
-                "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
-                "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
+    # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
+    #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
+    #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
+    #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
+    #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
+    #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
+    #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
+    #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
+    #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
+    #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
+    #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
+    #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
+    #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
-    # Make a temp directory for all data :
-    try
-        cd("$(output_dir)/temp_data")
-    catch
-        mkdir("$(output_dir)/temp_data")
-        cd("$(output_dir)/temp_data")
-    end
-
-    file = "$(file_basename)_$(province).zip"
-    ID = prov_ID[province]
-    url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
-
-    # Download the data (if not downloaded already) and unzip the data :
-    if file in glob("*", pwd())
-        run(`unzip $(file)`)   # unzip the data
-    else
-        drive_download(url, pwd());
-        #sleep(1)
-        try
-            run(`unzip $(file)`)   # unzip the data
-            cd("$(output_dir)")
-        catch
-            throw(error("Unable to unzip the data file."))
-        end
-    end
-
-    input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
-    if split
-        # Make the output directory if it doesn't exist :
-        try
-            mkdir("$(output_dir)/$(province)")
-        catch
-            nothing
-        end
-        output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
-    else
-        output_d = "$(output_dir)/"
-    end
-
-    # Convert the data in the specified format (CSV or NetCDF) :
     if lowercase(format) == "csv"
-        txt2csv(input_d, output_d, province)
-    elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
-        txt2netcdf(input_d, output_d)
-    else
-        throw(error("Format is not valid"))
+        info_df = DataFrame(A = String[],   # Name
+        B = String[],   # Province
+        C = String[],   # ID
+        D = String[],   # Lat
+        E = String[],   # Lon
+        F = String[],   # Elevation
+        G = String[],   # Number of years
+        H = String[],   # CSV filename
+        I = String[])   # Original filename
+        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
+        rename!(info_df, Symbol.(colnames))
     end
 
-    # Automatic deletion
-    if rm_temp
-        rm("$(output_dir)/temp_data", recursive=true)
-    end
+    for province in provinces
+        # Make a temp directory for all data :
+        try
+            cd("$(output_dir)/temp_data")
+        catch
+            mkdir("$(output_dir)/temp_data")
+            cd("$(output_dir)/temp_data")
+        end
 
+        file = "$(file_basename)_$(province).zip"
+        #ID = prov_ID[province]
+        #url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
+
+        # Download the data (if not downloaded already) and unzip the data :
+        if file in glob("*", pwd())
+            run(`unzip $(file)`)   # unzip the data
+        else
+            ftp_init();
+            ftp = FTP(hostname = url, username = user, password=pswd)
+            dir_content = readdir(ftp);
+            # Check if requested file is in the directory :
+            if file in dir_content
+                download(ftp, file, file)
+                close(ftp)
+                run(`unzip $(file)`)   # unzip the data
+                cd("$(output_dir)")
+            else
+                throw(error("File not found in the specified directory."))
+            end
+            #drive_download(url, pwd());
+            #try
+            #    run(`unzip $(file)`)   # unzip the data
+            #    cd("$(output_dir)")
+            #catch
+            #    throw(error("Unable to unzip the data file."))
+            #end
+        end
+
+        input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+        if split
+            # Make the output directory if it doesn't exist :
+            try
+                mkdir("$(output_dir)/$(province)")
+            catch
+                nothing
+            end
+            output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+        else
+            output_d = "$(output_dir)/"
+        end
+
+        # Convert the data in the specified format (CSV or NetCDF) :
+        if lowercase(format) == "csv"
+            #txt2csv(input_d, output_d, province)
+            info_df = vcat(info_df, txt2csv(input_d, output_d, province))
+        elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
+            txt2netcdf(input_d, output_d)
+        else
+            throw(error("Format is not valid"))
+        end
+
+        # Automatic deletion
+        if rm_temp
+            rm("$(output_dir)/temp_data", recursive=true)
+        end
+    end
+    output_info = "$(output_dir)/info_stations.csv"
+    CSV.write(output_info, info_df)
     return nothing
 end
 
@@ -258,11 +293,20 @@ end
 This function downloads IDF data from ECCC Google Drive directory for multiple provinces
     and generates CSV or netCDF files. CSV format is selected by default.
 """
-function data_download(province::Array{String,N} where N, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
-    for i in 1:length(province)
-        data_download(province[i], output_dir, format, split=split, rm_temp=rm_temp)
+function data_download(output_dir::String, province::String="all", format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+    prov_list = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
+    #prov_list = ["NL","PE"]    # Test avec 2 provinces
+    if province == "all"
+        data_download(output_dir, prov_list, format, split=split, rm_temp=rm_temp)
+    else
+        data_download(output_dir, [province], format, split=split, rm_temp=rm_temp)
     end
 end
+# function data_download(province::Array{String,N} where N, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+#     for i in 1:length(province)
+#         data_download(province[i], output_dir, format, split=split, rm_temp=rm_temp)
+#     end
+# end
 
 """
     netcdf_generator(fileName::String)
