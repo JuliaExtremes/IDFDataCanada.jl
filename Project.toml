@@ -1,7 +1,7 @@
 name = "IDFDataCanada"
 uuid = "b4a361a7-a77f-4d9e-8c40-a407543557fa"
 authors = ["Gabriel Gobeil <gabriel.gobeil199@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 AxisArrays = "39de3d68-74b9-583c-8d2d-e117c070f3a9"
@@ -18,6 +18,7 @@ NCDatasets = "85f8d34a-cbdd-5861-8df4-14fed0d494ab"
 AxisArrays = "0.4"
 CSV = "0.6"
 DataFrames = "0.20"
+FTPClient = "1.0"
 Glob = "1.3"
 HTTP = "0.8"
 LibCURL = "0.5"
