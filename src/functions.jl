@@ -1,5 +1,4 @@
-using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
-using FTPClient
+using AxisArrays, CSV, DataFrames, Dates, Glob, NCDatasets, PyCall
 
 """
     get_idf(fileName::String)
@@ -107,7 +106,7 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
         CSV.write(output_f, data)   # Generate a CSV file from table 1 data for each station
         println("$(basename(output_f)) : OK")
 
-        nbyears = size(info_df, 1)
+        nbyears = size(data, 1)
         info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
         push!(info_df, info)    # Fill the province station info file
     end
@@ -122,14 +121,32 @@ end
 This function returns netCDF files containing observed annual maximum data
     and station info for each station of a province.
 """
-function txt2netcdf(input_dir::String, output_dir::String)
+function txt2netcdf(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
     nbstations = size(files,1)
+
+    # Create an empty Dataframe to be filled with station info
+    info_df = DataFrame(A = String[],   # Name
+    B = String[],   # Province
+    C = String[],   # ID
+    D = String[],   # Lat
+    E = String[],   # Lon
+    F = String[],   # Elevation
+    G = String[],   # Number of years
+    H = String[],   # CSV filename
+    I = String[])   # Original filename
+    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
+    rename!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
         # For each station, get the idf data and station info
         filename = files[i]
         stationid, lat, lon, altitude, data, stationname = get_idf(filename)
+
+        # Fill the province station info file
+        nbyears = size(data, 1)
+        info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".nc"), basename(filename)]
+        push!(info_df, info)  
 
         # Generate an empty NetCDF
         output_f = "$(output_dir)/$(stationid).nc"
@@ -171,6 +188,7 @@ function txt2netcdf(input_dir::String, output_dir::String)
 
     println("$(basename(output_f)) : OK")
     end
+    return info_df
 end
 
 """
@@ -180,12 +198,14 @@ This function downloads IDF data from ECCC Google Drive directory for a province
     and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+    
+    # Import gdown module to download big files from GoogleDrive
+    gdown = pyimport("gdown")
+
     # Data version
+    #file_basename = "IDF_v3.00_2019_02_27"
     #file_basename = "IDF_v3.10_2020_03_27"
-    file_basename = "IDF_v3.00_2019_02_27"
-    url = "ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/"
-    user = "client_climate"
-    pswd = ""
+    file_basename = "IDF_v-3.20_2021_03_26"
 
     # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
     # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
@@ -202,19 +222,40 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
     #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
     #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
+    #Provinces ID keys (for IDF_v-3.20_2021_03_26 only)
+    prov_ID = Dict("YT" => "15eOgNs7O78esPguQxsmbhpMEgWfwTqzT",
+                "SK" => "10c-LqmEkHtFeGiyArgHAqUa4clYjhtVu",
+                "QC" => "1fdEEYCrj_t3Y3IXSXAALEUX-Urh2x5jG",
+                "PE" => "1HueZnQA398ESGi-1op34maE7NZAi2grk",
+                "ON" => "1V-8QENwq6yVSOfqErwn2Gm4NEyvmaoPx",
+                "NU" => "1pkwSW3sqGwRPBVw7Lzb3xGg2IZPbCzAV",
+                "NT" => "1iiOTzQe9f6sJnXaG-6xBrhGMMoPvL2Tw",
+                "NS" => "1OCpnA28Kk6F6MABvWzV2jPuDH2eMaoSx",
+                "NL" => "1VD_iqnFFO9SJ1mrll1Lj7yGuz-WURkfz",
+                "NB" => "1qEyLZaSksJ6I784jllO2cVF8csCe64Jo",
+                "MB" => "1XhloivDGWrl_x-yVxq6-qOFm7Lg9R3Rh",
+                "BC" => "1eY7rtbxdyGHhySInf77lW6RcVVjEmimL",
+                "AB" => "1Y0k_DpLggMp98BGu8v7pW-pI89FhadEv")
+
+    
+    info_df = DataFrame(A = String[],   # Name
+                        B = String[],   # Province
+                        C = String[],   # ID
+                        D = String[],   # Lat
+                        E = String[],   # Lon
+                        F = String[],   # Elevation
+                        G = String[],   # Number of years
+                        H = String[],   # CSV filename
+                        I = String[])   # Original filename
+
     if lowercase(format) == "csv"
-        info_df = DataFrame(A = String[],   # Name
-        B = String[],   # Province
-        C = String[],   # ID
-        D = String[],   # Lat
-        E = String[],   # Lon
-        F = String[],   # Elevation
-        G = String[],   # Number of years
-        H = String[],   # CSV filename
-        I = String[])   # Original filename
         colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
-        rename!(info_df, Symbol.(colnames))
+    elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
+        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
+    else
+        throw(error("Format is not valid")) 
     end
+    rename!(info_df, Symbol.(colnames))
 
     for province in provinces
         # Make a temp directory for all data :
@@ -226,32 +267,22 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
         end
 
         file = "$(file_basename)_$(province).zip"
-        #ID = prov_ID[province]
+        ID = prov_ID[province]
         #url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
+        url = "https://drive.google.com/uc?id=$(ID)";
+
 
         # Download the data (if not downloaded already) and unzip the data :
         if file in glob("*", pwd())
             run(`unzip $(file)`)   # unzip the data
         else
-            ftp_init();
-            ftp = FTP(hostname = url, username = user, password=pswd)
-            dir_content = readdir(ftp);
-            # Check if requested file is in the directory :
-            if file in dir_content
-                download(ftp, file, file)
-                close(ftp)
-                run(`unzip $(file)`)   # unzip the data
-                cd("$(output_dir)")
-            else
-                throw(error("File not found in the specified directory."))
+            gdown.download(url, file)
+            try
+               run(`unzip $(file)`)   # unzip the data
+               cd("$(output_dir)")
+            catch
+               throw(error("Unable to unzip the data file."))
             end
-            #drive_download(url, pwd());
-            #try
-            #    run(`unzip $(file)`)   # unzip the data
-            #    cd("$(output_dir)")
-            #catch
-            #    throw(error("Unable to unzip the data file."))
-            #end
         end
 
         input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
@@ -269,10 +300,9 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
 
         # Convert the data in the specified format (CSV or NetCDF) :
         if lowercase(format) == "csv"
-            #txt2csv(input_d, output_d, province)
             info_df = vcat(info_df, txt2csv(input_d, output_d, province))
         elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
-            txt2netcdf(input_d, output_d)
+            info_df = vcat(info_df, txt2netcdf(input_d, output_d, province))
         else
             throw(error("Format is not valid"))
         end
@@ -295,18 +325,12 @@ This function downloads IDF data from ECCC Google Drive directory for multiple p
 """
 function data_download(output_dir::String, province::String="all", format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     prov_list = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
-    #prov_list = ["NL","PE"]    # Test avec 2 provinces
     if province == "all"
         data_download(output_dir, prov_list, format, split=split, rm_temp=rm_temp)
     else
         data_download(output_dir, [province], format, split=split, rm_temp=rm_temp)
     end
 end
-# function data_download(province::Array{String,N} where N, output_dir::String, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
-#     for i in 1:length(province)
-#         data_download(province[i], output_dir, format, split=split, rm_temp=rm_temp)
-#     end
-# end
 
 """
     netcdf_generator(fileName::String)
@@ -418,29 +442,4 @@ function netcdf_generator(fileName::String)
     v16.attrib["units"] = "mm"
 
     close(ds)
-end
-
-"""
-    drive_download(url::String, localdir::String)
-
-This function downloads zip files from Google Drive using HTTP.
-"""
-function drive_download(url::String, localdir::String)
-    HTTP.open("GET", url) do stream
-        r = HTTP.startread(stream);
-        content_disp = HTTP.header(r, "Content-Disposition");
-        m = match(r"filename=\\\"(.*)\\\"", content_disp);
-        filename = ""
-        if m !== nothing
-            filename = m.match[11:end-1]
-            println(filename)
-            filepath = joinpath(localdir, filename)
-            #downloaded_bytes = 0
-            Base.open(filepath, "w") do fh
-                while(!eof(stream))
-                    write(fh, readavailable(stream));
-                end
-            end
-        end
-    end
 end
