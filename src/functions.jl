@@ -1,5 +1,3 @@
-using AxisArrays, CSV, DataFrames, Dates, Glob, NCDatasets, PyCall
-
 """
     get_idf(fileName::String)
 
@@ -19,17 +17,17 @@ function get_idf(fileName::String)
     # Lat, lon and altitude
     temp = doc[16]
     stripchar = (s, r) -> replace(s, Regex("[$r]") => "")    # to remove ' from lat/lon
-    latDMS1 = parse(Int, stripchar(temp[12:14],"'"))
-    latDMS2 = (parse(Int, stripchar(temp[15:17],"'")))/60
-    lat = round(parse(Float32, (string(latDMS1)*"."*string(latDMS2)[3:end])), digits=2)  # Lat (DMS)
+    latDMS1 = parse(Int, stripchar(temp[12:14], "'"))
+    latDMS2 = (parse(Int, stripchar(temp[15:17], "'"))) / 60
+    lat = round(parse(Float32, (string(latDMS1) * "." * string(latDMS2)[3:end])), digits=2)  # Lat (DMS)
 
-    lonDMS1 = parse(Int, stripchar(temp[34:37],"'"))
+    lonDMS1 = parse(Int, stripchar(temp[34:37], "'"))
     if lonDMS1 > 99  # character count change from 99 to 100 (+1)
-        lonDMS2 = (parse(Int, stripchar(temp[38:40],"'")))/60
+        lonDMS2 = (parse(Int, stripchar(temp[38:40], "'"))) / 60
     else
-        lonDMS2 = (parse(Int, stripchar(temp[37:39],"'")))/60
+        lonDMS2 = (parse(Int, stripchar(temp[37:39], "'"))) / 60
     end
-    lon = round(parse(Float32, ("-"*string(lonDMS1)*"."*string(lonDMS2)[3:end])), digits=2)  # Lon (DMS)
+    lon = round(parse(Float32, ("-" * string(lonDMS1) * "." * string(lonDMS2)[3:end])), digits=2)  # Lon (DMS)
 
     altitude = parse(Float32, temp[65:69])   # Altitude (m)
 
@@ -37,24 +35,24 @@ function get_idf(fileName::String)
     indicateur = "---------------------------------------------------------------------"
     for i = 1:length(doc)
         if isequal(strip(doc[i]), indicateur)
-            global nbyears = i-30   # Nb of years
+            global nbyears = i - 30   # Nb of years
         end
     end
 
     # Data from Table 1 : Annual Maximum (mm)/Maximum annuel (mm)
-    table1 = doc[30:30+nbyears-1]
+    table1 = doc[30:30 + nbyears - 1]
 
     # Create an empty Dataframe to be filled with values from table 1
-    data_df = DataFrame(A = String[],   # Year
-    B = String[],   # 5min
-    C = String[],   # 10min
-    D = String[],   # 15min
-    E = String[],   # 30min
-    F = String[],   # 1h
-    G = String[],   # 2h
-    H = String[],   # 6h
-    I = String[],   # 12h
-    J = String[])   # 24h
+    data_df = DataFrame(A=String[],   # Year
+    B=String[],   # 5min
+    C=String[],   # 10min
+    D=String[],   # 15min
+    E=String[],   # 30min
+    F=String[],   # 1h
+    G=String[],   # 2h
+    H=String[],   # 6h
+    I=String[],   # 12h
+    J=String[])   # 24h
     for j in 1:length(table1)
         data = split(table1[j])
         push!(data_df, data)
@@ -63,9 +61,9 @@ function get_idf(fileName::String)
     rename!(data_df, Symbol.(colnames))
 
     # Function to replace -99.9 by missing
-    val2missing(v,mv) = mv == v ? missing : v
+    val2missing(v, mv) = mv == v ? missing : v
     for a in 1:10
-        data_df[!,a] = val2missing.(data_df[!,a],"-99.9")
+        data_df[!,a] = val2missing.(data_df[!,a], "-99.9")
     end
 
     close(f)
@@ -84,18 +82,18 @@ This function returns CSV files of observed annual maximum for each station
 """
 function txt2csv(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
-    nbstations = size(files,1)
+    nbstations = size(files, 1)
 
     # Create an empty Dataframe to be filled with station info
-    info_df = DataFrame(A = String[],   # Name
-    B = String[],   # Province
-    C = String[],   # ID
-    D = String[],   # Lat
-    E = String[],   # Lon
-    F = String[],   # Elevation
-    G = String[],   # Number of years
-    H = String[],   # CSV filename
-    I = String[])   # Original filename
+    info_df = DataFrame(A=String[],   # Name
+    B=String[],   # Province
+    C=String[],   # ID
+    D=String[],   # Lat
+    E=String[],   # Lon
+    F=String[],   # Elevation
+    G=String[],   # Number of years
+    H=String[],   # CSV filename
+    I=String[])   # Original filename
     colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
     rename!(info_df, Symbol.(colnames))
 
@@ -110,8 +108,8 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
         info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
         push!(info_df, info)    # Fill the province station info file
     end
-    #output_info = "$(output_dir)/info_stations_$(province).csv"
-    #CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
+    # output_info = "$(output_dir)/info_stations_$(province).csv"
+    # CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
     return info_df
 end
 
@@ -123,18 +121,18 @@ This function returns netCDF files containing observed annual maximum data
 """
 function txt2netcdf(input_dir::String, output_dir::String, province::String)
     files = glob("*.txt", input_dir)
-    nbstations = size(files,1)
+    nbstations = size(files, 1)
 
     # Create an empty Dataframe to be filled with station info
-    info_df = DataFrame(A = String[],   # Name
-    B = String[],   # Province
-    C = String[],   # ID
-    D = String[],   # Lat
-    E = String[],   # Lon
-    F = String[],   # Elevation
-    G = String[],   # Number of years
-    H = String[],   # CSV filename
-    I = String[])   # Original filename
+    info_df = DataFrame(A=String[],   # Name
+    B=String[],   # Province
+    C=String[],   # ID
+    D=String[],   # Lat
+    E=String[],   # Lon
+    F=String[],   # Elevation
+    G=String[],   # Number of years
+    H=String[],   # CSV filename
+    I=String[])   # Original filename
     colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
     rename!(info_df, Symbol.(colnames))
 
@@ -164,13 +162,13 @@ function txt2netcdf(input_dir::String, output_dir::String, province::String)
         ds["station_name"][1, 1:length(stationname)] = collect(stationname)
 
         # Number of observations :
-        nb_obs = size(data,1)
+        nb_obs = size(data, 1)
         ds["row_size"][1] = nb_obs
 
         # Time :
         data[!,1] = Dates.DateTime.(parse.(Int, data[!,1])) # Convert years to Date format
         units = "days since 2000-01-01 00:00:00"
-        timedata = NCDatasets.CFTime.timeencode(data[!,1],"days since 1900-01-01 00:00:00","standard")    # Encode Dates in days since format
+        timedata = NCDatasets.CFTime.timeencode(data[!,1], "days since 1900-01-01 00:00:00", "standard")    # Encode Dates in days since format
         ds["time"][1:nb_obs] = timedata
 
         # Data from table 1 :
@@ -198,123 +196,127 @@ This function downloads IDF data from ECCC Google Drive directory for a province
     and generates CSV or netCDF files. CSV format is selected by default.
 """
 function data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
+
+    sys = pyimport("sys")
+    if haskey(sys.modules, "gdown")
+        # Import gdown module to download big files from GoogleDrive
+        gdown = pyimport("gdown")
     
-    # Import gdown module to download big files from GoogleDrive
-    gdown = pyimport("gdown")
+        # Data version
+        # file_basename = "IDF_v3.10_2020_03_27"
+        file_basename = "IDF_v-3.20_2021_03_26"
 
-    # Data version
-    #file_basename = "IDF_v3.00_2019_02_27"
-    #file_basename = "IDF_v3.10_2020_03_27"
-    file_basename = "IDF_v-3.20_2021_03_26"
+        # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
+        # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
+        #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
+        #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
+        #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
+        #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
+        #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
+        #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
+        #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
+        #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
+        #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
+        #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
+        #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
+        #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
-    # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
-    # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
-    #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
-    #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
-    #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
-    #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
-    #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
-    #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
-    #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
-    #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
-    #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
-    #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
-    #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
-    #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
+        # Provinces ID keys (for IDF_v-3.20_2021_03_26 only)
+        prov_ID = Dict("YT" => "15eOgNs7O78esPguQxsmbhpMEgWfwTqzT",
+                    "SK" => "10c-LqmEkHtFeGiyArgHAqUa4clYjhtVu",
+                    "QC" => "1fdEEYCrj_t3Y3IXSXAALEUX-Urh2x5jG",
+                    "PE" => "1HueZnQA398ESGi-1op34maE7NZAi2grk",
+                    "ON" => "1V-8QENwq6yVSOfqErwn2Gm4NEyvmaoPx",
+                    "NU" => "1pkwSW3sqGwRPBVw7Lzb3xGg2IZPbCzAV",
+                    "NT" => "1iiOTzQe9f6sJnXaG-6xBrhGMMoPvL2Tw",
+                    "NS" => "1OCpnA28Kk6F6MABvWzV2jPuDH2eMaoSx",
+                    "NL" => "1VD_iqnFFO9SJ1mrll1Lj7yGuz-WURkfz",
+                    "NB" => "1qEyLZaSksJ6I784jllO2cVF8csCe64Jo",
+                    "MB" => "1XhloivDGWrl_x-yVxq6-qOFm7Lg9R3Rh",
+                    "BC" => "1eY7rtbxdyGHhySInf77lW6RcVVjEmimL",
+                    "AB" => "1Y0k_DpLggMp98BGu8v7pW-pI89FhadEv")
+            
+        
+        info_df = DataFrame(A=String[],   # Name
+                            B=String[],   # Province
+                            C=String[],   # ID
+                            D=String[],   # Lat
+                            E=String[],   # Lon
+                            F=String[],   # Elevation
+                            G=String[],   # Number of years
+                            H=String[],   # CSV filename
+                            I=String[])   # Original filename
 
-    #Provinces ID keys (for IDF_v-3.20_2021_03_26 only)
-    prov_ID = Dict("YT" => "15eOgNs7O78esPguQxsmbhpMEgWfwTqzT",
-                "SK" => "10c-LqmEkHtFeGiyArgHAqUa4clYjhtVu",
-                "QC" => "1fdEEYCrj_t3Y3IXSXAALEUX-Urh2x5jG",
-                "PE" => "1HueZnQA398ESGi-1op34maE7NZAi2grk",
-                "ON" => "1V-8QENwq6yVSOfqErwn2Gm4NEyvmaoPx",
-                "NU" => "1pkwSW3sqGwRPBVw7Lzb3xGg2IZPbCzAV",
-                "NT" => "1iiOTzQe9f6sJnXaG-6xBrhGMMoPvL2Tw",
-                "NS" => "1OCpnA28Kk6F6MABvWzV2jPuDH2eMaoSx",
-                "NL" => "1VD_iqnFFO9SJ1mrll1Lj7yGuz-WURkfz",
-                "NB" => "1qEyLZaSksJ6I784jllO2cVF8csCe64Jo",
-                "MB" => "1XhloivDGWrl_x-yVxq6-qOFm7Lg9R3Rh",
-                "BC" => "1eY7rtbxdyGHhySInf77lW6RcVVjEmimL",
-                "AB" => "1Y0k_DpLggMp98BGu8v7pW-pI89FhadEv")
-
-    
-    info_df = DataFrame(A = String[],   # Name
-                        B = String[],   # Province
-                        C = String[],   # ID
-                        D = String[],   # Lat
-                        E = String[],   # Lon
-                        F = String[],   # Elevation
-                        G = String[],   # Number of years
-                        H = String[],   # CSV filename
-                        I = String[])   # Original filename
-
-    if lowercase(format) == "csv"
-        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
-    elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
-        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
-    else
-        throw(error("Format is not valid")) 
-    end
-    rename!(info_df, Symbol.(colnames))
-
-    for province in provinces
-        # Make a temp directory for all data :
-        try
-            cd("$(output_dir)/temp_data")
-        catch
-            mkdir("$(output_dir)/temp_data")
-            cd("$(output_dir)/temp_data")
-        end
-
-        file = "$(file_basename)_$(province).zip"
-        ID = prov_ID[province]
-        #url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
-        url = "https://drive.google.com/uc?id=$(ID)";
-
-
-        # Download the data (if not downloaded already) and unzip the data :
-        if file in glob("*", pwd())
-            run(`unzip $(file)`)   # unzip the data
-        else
-            gdown.download(url, file)
-            try
-               run(`unzip $(file)`)   # unzip the data
-               cd("$(output_dir)")
-            catch
-               throw(error("Unable to unzip the data file."))
-            end
-        end
-
-        input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
-        if split
-            # Make the output directory if it doesn't exist :
-            try
-                mkdir("$(output_dir)/$(province)")
-            catch
-                nothing
-            end
-            output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
-        else
-            output_d = "$(output_dir)/"
-        end
-
-        # Convert the data in the specified format (CSV or NetCDF) :
         if lowercase(format) == "csv"
-            info_df = vcat(info_df, txt2csv(input_d, output_d, province))
+            colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
         elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
-            info_df = vcat(info_df, txt2netcdf(input_d, output_d, province))
+            colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
         else
-            throw(error("Format is not valid"))
+            throw(error("Format is not valid")) 
         end
+        rename!(info_df, Symbol.(colnames))
 
-        # Automatic deletion
-        if rm_temp
-            rm("$(output_dir)/temp_data", recursive=true)
+        for province in provinces
+            # Make a temp directory for all data :
+            try
+                cd("$(output_dir)/temp_data")
+            catch
+                mkdir("$(output_dir)/temp_data")
+                cd("$(output_dir)/temp_data")
+            end
+
+            file = "$(file_basename)_$(province).zip"
+            ID = prov_ID[province]
+            url = "https://drive.google.com/uc?id=$(ID)";
+
+
+            # Download the data (if not downloaded already) and unzip the data :
+            if file in glob("*", pwd())
+                run(`unzip $(file)`)   # unzip the data
+            else
+                gdown.download(url, file)
+                try
+                run(`unzip $(file)`)   # unzip the data
+                cd("$(output_dir)")
+                catch
+                throw(error("Unable to unzip the data file."))
+                end
+            end
+
+            input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+            if split
+                # Make the output directory if it doesn't exist :
+                try
+                    mkdir("$(output_dir)/$(province)")
+                catch
+                    nothing
+                end
+                output_d = "$(output_dir)/$(province)" # Where the netcdf/csv will be created
+            else
+                output_d = "$(output_dir)/"
+            end
+
+            # Convert the data in the specified format (CSV or NetCDF) :
+            if lowercase(format) == "csv"
+                info_df = vcat(info_df, txt2csv(input_d, output_d, province))
+            elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
+                info_df = vcat(info_df, txt2netcdf(input_d, output_d, province))
+            else
+                throw(error("Format is not valid"))
+            end
+
+            # Automatic deletion
+            if rm_temp
+                rm("$(output_dir)/temp_data", recursive=true)
+            end
         end
+        output_info = "$(output_dir)/info_stations.csv"
+        CSV.write(output_info, info_df)
+        return nothing
+    else
+        throw(error("The Python package gdown could not be imported by pyimport. Usually this means
+        that you did not install gdown in the Python version being used by PyCall."))
     end
-    output_info = "$(output_dir)/info_stations.csv"
-    CSV.write(output_info, info_df)
-    return nothing
 end
 
 """
@@ -339,7 +341,7 @@ This functions generates empty netCDF files (used by txt2netcdf).
 """
 function netcdf_generator(fileName::String)
     # Creation of an empty NetCDF :
-    ds = Dataset(fileName,"c")
+    ds = Dataset(fileName, "c")
 
     # Content definition :
     # Dimensions
@@ -441,5 +443,5 @@ function netcdf_generator(fileName::String)
     v16.attrib["cell_methods"] = "time: sum over 24 hours time: maximum within years"
     v16.attrib["units"] = "mm"
 
-    close(ds)
+close(ds)
 end
