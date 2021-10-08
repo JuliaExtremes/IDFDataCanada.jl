@@ -9,3 +9,6 @@ jobs:
 ​
 notifications:
   email: false
+
+after_success:
+- julia -e 'using Pkg; cd(Pkg.dir("IDFDataCanada")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
