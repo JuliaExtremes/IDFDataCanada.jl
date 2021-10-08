@@ -1,6 +1,9 @@
 using IDFDataCanada
-using Test
+using Random, Test, CSV, DataFrames
 
-@testset "IDFDataCanada.jl.jl" begin
-    # Write your own tests here.
-end
+# Set the seed for reproductible test results
+Random.seed!(12)
+
+@testset "IDFDataCanada.jl" begin
+    include("get_idf.jl")
+end;
