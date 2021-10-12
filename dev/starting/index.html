@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Getting Started · IDFDataCanada.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.039/juliamono-regular.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.11/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">IDFDataCanada.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">IDFDataCanada.jl</a></li><li class="is-active"><a class="tocitem" href>Getting Started</a><ul class="internal"><li><a class="tocitem" href="#Installation"><span>Installation</span></a></li><li><a class="tocitem" href="#Extract-data"><span>Extract data</span></a></li><li><a class="tocitem" href="#Examples"><span>Examples</span></a></li></ul></li><li><a class="tocitem" href="../functions/">Functions</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Getting Started</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Getting Started</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/houton199/IDFDataCanada.jl/blob/master/docs/src/starting.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Getting-Started"><a class="docs-heading-anchor" href="#Getting-Started">Getting Started</a><a id="Getting-Started-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-Started" title="Permalink"></a></h1><h2 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h2><p>The following <strong>Julia</strong> command will install the package :</p><pre><code class="language-julia hljs">julia&gt; using Pkg
+julia&gt; Pkg.add(&quot;IDFDataCanada&quot;)</code></pre><h2 id="Extract-data"><a class="docs-heading-anchor" href="#Extract-data">Extract data</a><a id="Extract-data-1"></a><a class="docs-heading-anchor-permalink" href="#Extract-data" title="Permalink"></a></h2><p>The key feature of <em>IDFDataCanada</em> is the <code>data_download</code> function. It can be used directly by providing the output directory (must be an existing folder), the province code (ex: &quot;QC&quot; for Quebec) and the format (CSV or netCDF). CSV format is selected by default. The two keyword arguments, split and rm_temp, can be set to extract data in a subfolder for each province or to keep the temporarily downloaded zip files.</p><pre><code class="language-julia hljs">using IDFDataCanada
+data_download(output_dir::String, province::String; format::String=&quot;csv&quot;, split::Bool=false, rm_temp::Bool=true)</code></pre><p><code>data_download</code> will create output files of the specified format in the output directory.</p><h3 id="Format"><a class="docs-heading-anchor" href="#Format">Format</a><a id="Format-1"></a><a class="docs-heading-anchor-permalink" href="#Format" title="Permalink"></a></h3><h4 id="CSV"><a class="docs-heading-anchor" href="#CSV">CSV</a><a id="CSV-1"></a><a class="docs-heading-anchor-permalink" href="#CSV" title="Permalink"></a></h4><p>By choosing CSV format, it will return a CSV file for each station of the selected province with ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1: Annual Maximum (mm).</p><table><tr><th style="text-align: left">Année</th><th style="text-align: center">5min</th><th style="text-align: center">10min</th><th style="text-align: center">15min</th><th style="text-align: center">30min</th><th style="text-align: center">1h</th><th style="text-align: center">2h</th><th style="text-align: center">6h</th><th style="text-align: center">12h</th><th style="text-align: right">24h</th></tr><tr><td style="text-align: left"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: right"></td></tr></table><p>Station informations for all the province are returned in a CSV file named info<em>stations</em>{PROVINCE_CODE}.csv :</p><table><tr><th style="text-align: left">Name</th><th style="text-align: center">Province</th><th style="text-align: center">ID</th><th style="text-align: center">Lat</th><th style="text-align: center">Lon</th><th style="text-align: center">Elevation</th><th style="text-align: center">Number of years</th><th style="text-align: center">CSV filename</th><th style="text-align: right">Original filename</th></tr><tr><td style="text-align: left"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: center"></td><td style="text-align: right"></td></tr></table><h4 id="NetCDF"><a class="docs-heading-anchor" href="#NetCDF">NetCDF</a><a id="NetCDF-1"></a><a class="docs-heading-anchor-permalink" href="#NetCDF" title="Permalink"></a></h4><p>By choosing NetCDF format, it will return a NetCDF file for each station of the selected province with station informations and ECCC Short Duration Rainfall Intensity-Duration-Frequency Data from Table 1: Annual Maximum (mm).</p><pre><code class="nohighlight hljs">dimensions:
+	station = UNLIMITED ; // (1 currently)
+	obs = UNLIMITED ; // (29 currently)
+	name_strlen = UNLIMITED ; // (20 currently)
+	id_strlen = UNLIMITED ; // (7 currently)
+variables:
+	float lon(station) ;
+		lon:standard_name = &quot;longitude&quot; ;
+		lon:long_name = &quot;station longitude&quot; ;
+		lon:units = &quot;degrees_east&quot; ;
+	float lat(station) ;
+		lat:standard_name = &quot;latitude&quot; ;
+		lat:long_name = &quot;station latitude&quot; ;
+		lat:units = &quot;degrees_north&quot; ;
+	float alt(station) ;
+		alt:long_name = &quot;vertical distance above the surface&quot; ;
+		alt:standard_name = &quot;height&quot; ;
+		alt:units = &quot;m&quot; ;
+		alt:positive = &quot;up&quot; ;
+		alt:axis = &quot;Z&quot; ;
+	char station_name(name_strlen, station) ;
+		station_name:long_name = &quot;station name&quot; ;
+	char station_ID(id_strlen, station) ;
+		station_ID:long_name = &quot;station id&quot; ;
+		station_ID:cf_role = &quot;timeseries_id&quot; ;
+	int row_size(station) ;
+		row_size:long_name = &quot;number of observations for this station&quot; ;
+		row_size:sample_dimension = &quot;obs&quot; ;
+	double time(obs) ;
+		time:standard_name = &quot;time&quot; ;
+		time:units = &quot;days since 1900-01-01&quot; ;
+	float max_rainfall_amount_5min(obs) ;
+		max_rainfall_amount_5min:long_name = &quot;Annual maximum rainfall amount 5-minutes&quot; ;
+		max_rainfall_amount_5min:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_5min:cell_methods = &quot;time: sum over 5 min time: maximum within years&quot; ;
+		max_rainfall_amount_5min:units = &quot;mm&quot; ;
+	float max_rainfall_amount_10min(obs) ;
+		max_rainfall_amount_10min:long_name = &quot;Annual maximum rainfall amount 10-minutes&quot; ;
+		max_rainfall_amount_10min:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_10min:cell_methods = &quot;time: sum over 10 min time: maximum within years&quot; ;
+		max_rainfall_amount_10min:units = &quot;mm&quot; ;
+	float max_rainfall_amount_15min(obs) ;
+		max_rainfall_amount_15min:long_name = &quot;Annual maximum rainfall amount 15-minutes&quot; ;
+		max_rainfall_amount_15min:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_15min:cell_methods = &quot;time: sum over 15 min time: maximum within years&quot; ;
+		max_rainfall_amount_15min:units = &quot;mm&quot; ;
+	float max_rainfall_amount_30min(obs) ;
+		max_rainfall_amount_30min:long_name = &quot;Annual maximum rainfall amount 30-minutes&quot; ;
+		max_rainfall_amount_30min:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_30min:cell_methods = &quot;time: sum over 30 min time: maximum within years&quot; ;
+		max_rainfall_amount_30min:units = &quot;mm&quot; ;
+	float max_rainfall_amount_1h(obs) ;
+		max_rainfall_amount_1h:long_name = &quot;Annual maximum rainfall amount 1-hour&quot; ;
+		max_rainfall_amount_1h:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_1h:cell_methods = &quot;time: sum over 1 hour time: maximum within years&quot; ;
+		max_rainfall_amount_1h:units = &quot;mm&quot; ;
+	float max_rainfall_amount_2h(obs) ;
+		max_rainfall_amount_2h:long_name = &quot;Annual maximum rainfall amount 2-hours&quot; ;
+		max_rainfall_amount_2h:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_2h:cell_methods = &quot;time: sum over 2 hour time: maximum within years&quot; ;
+		max_rainfall_amount_2h:units = &quot;mm&quot; ;
+	float max_rainfall_amount_6h(obs) ;
+		max_rainfall_amount_6h:long_name = &quot;Annual maximum rainfall amount 6-hours&quot; ;
+		max_rainfall_amount_6h:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_6h:cell_methods = &quot;time: sum over 6 hours time: maximum within years&quot; ;
+		max_rainfall_amount_6h:units = &quot;mm&quot; ;
+	float max_rainfall_amount_12h(obs) ;
+		max_rainfall_amount_12h:long_name = &quot;Annual maximum rainfall amount 12-hours&quot; ;
+		max_rainfall_amount_12h:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_12h:cell_methods = &quot;time: sum over 12 hours time: maximum within years&quot; ;
+		max_rainfall_amount_12h:units = &quot;mm&quot; ;
+	float max_rainfall_amount_24h(obs) ;
+		max_rainfall_amount_24h:long_name = &quot;Annual maximum rainfall amount 24-hours&quot; ;
+		max_rainfall_amount_24h:coordinates = &quot;time lat lon alt station_ID&quot; ;
+		max_rainfall_amount_24h:cell_methods = &quot;time: sum over 24 hours time: maximum within years&quot; ;
+		max_rainfall_amount_24h:units = &quot;mm&quot; ;
+
+// global attributes:
+		:featureType = &quot;timeSeries&quot; ;
+		:title = &quot;Short Duration Rainfall Intensity-Duration-Frequency Data (ECCC)&quot; ;
+		:Conventions = &quot;CF-1.7&quot; ;
+		:comment = &quot;see H.2.4. Contiguous ragged array representation of time series&quot; ;
+		:original_source = &quot;idf_v3-00_2019_02_27_702_PROV_STATIONID_STATIONNAME.txt&quot; </code></pre><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><h3 id="CSV-2"><a class="docs-heading-anchor" href="#CSV-2">CSV</a><a class="docs-heading-anchor-permalink" href="#CSV-2" title="Permalink"></a></h3><p>Let&#39;s say someone wants to extract IDF data for Prince Edward Island (PE) in CSV format in the present working directory after having already downloaded the zip file:</p><pre><code class="nohighlight hljs">julia&gt; data_download(&quot;PE&quot;, pwd(), &quot;csv&quot;)
+Archive:  IDF_v3.00_2019_02_27_PE.zip
+replace IDF_v3.00_2019_02_27_PE/idf_v3-00_2019_02_27_830_PE_8300301_CHARLOTTETOWN_A.pdf? [y]es, [n]o, [A]ll, [N]one, [r]ename: N
+CHARLOTTETOWN A
+8300301.csv : OK
+SUMMERSIDE
+8300596.csv : OK
+HARRINGTON CDA CS
+830P001.csv : OK</code></pre><p>Three CSV files (8300301.csv, 8300596.csv and 830P001.csv) corresponding to the Prince Edward Island stations data and another CSV file (info_stations_PE.csv) containing the stations information will be returned in the present working directory.</p><h3 id="NetCDF-2"><a class="docs-heading-anchor" href="#NetCDF-2">NetCDF</a><a class="docs-heading-anchor-permalink" href="#NetCDF-2" title="Permalink"></a></h3><p>Then, let&#39;s say someone wants to extract IDF data for Prince Edward Island (PE) in NetCDF format in the present working directory:</p><pre><code class="language-julia hljs">julia&gt; using IDF
+julia&gt; data_download(&quot;PE&quot;, pwd(), &quot;netcdf&quot;)
+IDF_v3.10_2020_03_27_PE.zip
+Archive:  IDF_v3.10_2020_03_27_PE.zip
+   creating: IDF_v3.10_2020_03_27_PE/
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300301_CHARLOTTETOWN_A_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300562_ST._PETERS_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8300596_SUMMERSIDE_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_8305500_MAPLE_PLAINS_t.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS.txt  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_qq.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_r.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_r.png  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_t.pdf  
+  inflating: IDF_v3.10_2020_03_27_PE/idf_v-3.10_2020_03_27_830_PE_830P001_HARRINGTON_CDA_CS_t.png  
+CHARLOTTETOWN A
+8300301.nc : OK
+ST. PETERS
+8300562.nc : OK
+SUMMERSIDE
+8300596.nc : OK
+MAPLE PLAINS
+8305500.nc : OK
+HARRINGTON CDA CS
+830P001.nc : OK</code></pre><p>Five netCDF files (8300301.nc, 8300562.nc, 8300596.nc, 8305500.nc and 830P001.nc) corresponding to the Prince Edward Island stations will be returned in the present working directory.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« IDFDataCanada.jl</a><a class="docs-footer-nextpage" href="../functions/">Functions »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.7 on <span class="colophon-date" title="Tuesday 12 October 2021 19:46">Tuesday 12 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
