@@ -12,4 +12,5 @@ makedocs(modules = [IDFDataCanada],
 
 deploydocs(
         repo = "github.com/houton199/IDFDataCanada.jl.git",
+        devbranch = "dev"
 )
