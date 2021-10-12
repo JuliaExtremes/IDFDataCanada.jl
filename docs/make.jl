@@ -9,3 +9,7 @@ makedocs(modules = [IDFDataCanada],
         "functions.md"
         ]
 )
+
+deploydocs(
+        repo = "github.com/houton199/IDFDataCanada.jl.git",
+)
