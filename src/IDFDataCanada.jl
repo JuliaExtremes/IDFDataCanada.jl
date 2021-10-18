@@ -4,6 +4,6 @@ using AxisArrays, CSV, DataFrames, Dates, NCDatasets, PyCall
 
 include("functions.jl")
 
-export get_idf, txt2csv, txt2netcdf, data_download, netcdf_generator
+export data_download, get_idf, netcdf_generator, txt2csv, txt2netcdf
 
 end

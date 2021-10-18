@@ -1,32 +1,30 @@
 """
-    data_download(output_dir::String, provinces::Array{String,1}; format::String, split::Bool, rm_temp::Bool)
+    data_download(output_dir::String, provinces::Array{String,1}; 
+format::String="csv", split::Bool=false, rm_temp::Bool=true)
 
-This function downloads IDF data from ECCC Google Drive directory for a province
-    and generates CSV or netCDF files. CSV format is selected by default.
+Download IDF data from ECCC's Google Drive (zip files) and generate CSV (or netCDF) files from it.
+
+# Arguments
+
+- `output_dir::String` : the output directory.
+
+- `provinces::Array{String,1}` : the list of provinces codes.
+
+- `format::String="csv"` : the format (.csv or .nc) of the output files. CSV is selected by default.
+
+- `split::Bool=false`: split the output in separate directories for each provinces.
+
+- `rm_temp::Bool=true` : delete the .zip files after the output generation.
+
 """
-function data_download(output_dir::String, provinces::Array{String,1}; format::String="csv", split::Bool=false, rm_temp::Bool=true)
+function data_download(output_dir::String, provinces::Array{String,1}; 
+    format::String="csv", split::Bool=false, rm_temp::Bool=true)
 
     # Import gdown module to download big files from GoogleDrive
     gdown = pyimport("gdown")
 
     # Data version
-    # file_basename = "IDF_v3.10_2020_03_27"
     file_basename = "IDF_v-3.20_2021_03_26"
-
-    # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
-    # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
-    #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
-    #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
-    #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
-    #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
-    #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
-    #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
-    #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
-    #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
-    #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
-    #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
-    #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
-    #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
 
     # Provinces ID keys (for IDF_v-3.20_2021_03_26 only)
     prov_ID = Dict("YT" => "15eOgNs7O78esPguQxsmbhpMEgWfwTqzT",
@@ -43,7 +41,6 @@ function data_download(output_dir::String, provinces::Array{String,1}; format::S
                 "BC" => "1eY7rtbxdyGHhySInf77lW6RcVVjEmimL",
                 "AB" => "1Y0k_DpLggMp98BGu8v7pW-pI89FhadEv")
         
-    
     info_df = DataFrame(A=String[],   # Name
                         B=String[],   # Province
                         C=String[],   # ID
@@ -51,13 +48,15 @@ function data_download(output_dir::String, provinces::Array{String,1}; format::S
                         E=String[],   # Lon
                         F=String[],   # Elevation
                         G=String[],   # Number of years
-                        H=String[],   # CSV filename
+                        H=String[],   # Filename
                         I=String[])   # Original filename
 
     if lowercase(format) == "csv"
-        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
+        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", 
+        "Number of years", "CSV filename", "Original filename"]
     elseif lowercase(format) == "netcdf" || lowercase(format) == "nc"
-        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
+        colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", 
+        "Number of years", "NC filename", "Original filename"]
     else
         throw(error("Format is not valid")) 
     end
@@ -123,12 +122,27 @@ function data_download(output_dir::String, provinces::Array{String,1}; format::S
 end
 
 """
-    data_download(output_dir::String, province::String; format::String, split::Bool, rm_temp::Bool)
+    data_download(output_dir::String, province::String="all"; 
+format::String="csv", split::Bool=false, rm_temp::Bool=true)    
 
-This function downloads IDF data from ECCC Google Drive directory for multiple provinces
-    and generates CSV or netCDF files. CSV format is selected by default.
+Download IDF data from ECCC's Google Drive (zip files) and generate CSV (or netCDF) files from it.
+
+# Arguments
+
+- `output_dir::String` : the output directory.
+
+- `province::String="all"` : the province code (ex: "QC" for Quebec). All provinces is selected by default.
+
+- `format::String="csv"` : the format (.csv or .nc) of the output files. CSV is selected by default.
+
+- `split::Bool=false`: split the output in separate directories for each provinces.
+
+- `rm_temp::Bool=true` : delete the .zip files after the output generation.
+
 """
-function data_download(output_dir::String, province::String="all"; format::String="csv", split::Bool=false, rm_temp::Bool=true)
+function data_download(output_dir::String, province::String="all"; 
+    format::String="csv", split::Bool=false, rm_temp::Bool=true)
+
     prov_list = ["AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT"]
     if province == "all"
         data_download(output_dir, prov_list, format=format, split=split, rm_temp=rm_temp)
@@ -138,14 +152,18 @@ function data_download(output_dir::String, province::String="all"; format::Strin
 end
 
 """
-    get_idf(fileName::String)
+    get_idf(filename::String)
 
-This function reads ECCC IDF text files and returns station infos (ID, latitude, longitude,
-    altitude, and station name) and a DataFrame containing observed annual maximum in mm
-    (Table 1) for different durations.
+Read IDF text files and returns station infos (ID, latitude, longitude, 
+altitude, and station name) and a DataFrame containing observed annual maximum in mm (Table 1) for different durations.
+
+# Arguments
+
+- `filename::String` : the name of the .txt file to read.
+
 """
-function get_idf(fileName::String)
-    f = open(fileName, "r")
+function get_idf(filename::String)
+    f = open(filename, "r")
     doc = readlines(f)
 
     # Station name and ID
@@ -215,9 +233,18 @@ end
 """
     txt2csv(input_dir::String, output_dir::String)
 
-This function returns CSV files of observed annual maximum for each station
-    and one CSV file containing all station info (name, province, ID, lat, lon, elevation,
-    number of years, data CSV filenames, original filenames) for a province.
+Generate CSV files of observed annual maximum for each station of a province
+    and a DataFrame containing all station info (name, province, ID, lat, lon, elevation,
+    number of years, data CSV filenames, original filenames).
+
+# Arguments
+
+- `input_dir::String` : the input directory.
+
+- `output_dir::String` : the output directory.
+
+- `province::String` : the province code (ex: "QC" for Quebec).
+
 """
 function txt2csv(input_dir::String, output_dir::String, province::String)
     dir_content = readdir(input_dir, join=true)
@@ -234,7 +261,8 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
     G=String[],   # Number of years
     H=String[],   # CSV filename
     I=String[])   # Original filename
-    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "CSV filename", "Original filename"]
+    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", 
+    "Number of years", "CSV filename", "Original filename"]
     rename!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
@@ -245,19 +273,29 @@ function txt2csv(input_dir::String, output_dir::String, province::String)
         println("$(basename(output_f)) : OK")
 
         nbyears = size(data, 1)
-        info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
+        info = [stationname, province, stationid, string(lat), string(lon), 
+        string(altitude), string(nbyears), string(stationid, ".csv"), basename(filename)]
         push!(info_df, info)    # Fill the province station info file
     end
-    # output_info = "$(output_dir)/info_stations_$(province).csv"
-    # CSV.write(output_info, info_df)    # Generate a CSV file with station info for each province
+
     return info_df
 end
 
 """
     txt2netcdf(input_dir::String, output_dir::String)
 
-This function returns netCDF files containing observed annual maximum data
-    and station info for each station of a province.
+Generate netCDF files of observed annual maximum for each station of a province
+    and a DataFrame containing all station info (name, province, ID, lat, lon, elevation,
+    number of years, data netCDF filenames, original filenames).
+
+# Arguments
+
+- `input_dir::String` : the input directory.
+
+- `output_dir::String` : the output directory.
+
+- `province::String` : the province code (ex: "QC" for Quebec).
+
 """
 function txt2netcdf(input_dir::String, output_dir::String, province::String)
     dir_content = readdir(input_dir, join=true)
@@ -272,9 +310,10 @@ function txt2netcdf(input_dir::String, output_dir::String, province::String)
     E=String[],   # Lon
     F=String[],   # Elevation
     G=String[],   # Number of years
-    H=String[],   # CSV filename
+    H=String[],   # Filename
     I=String[])   # Original filename
-    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", "Number of years", "NC filename", "Original filename"]
+    colnames = ["Name", "Province", "ID", "Lat", "Lon", "Elevation", 
+    "Number of years", "NC filename", "Original filename"]
     rename!(info_df, Symbol.(colnames))
 
     for i in 1:nbstations
@@ -284,7 +323,8 @@ function txt2netcdf(input_dir::String, output_dir::String, province::String)
 
         # Fill the province station info file
         nbyears = size(data, 1)
-        info = [stationname, province, stationid, string(lat), string(lon), string(altitude), string(nbyears), string(stationid, ".nc"), basename(filename)]
+        info = [stationname, province, stationid, string(lat), string(lon), 
+        string(altitude), string(nbyears), string(stationid, ".nc"), basename(filename)]
         push!(info_df, info)  
 
         # Generate an empty NetCDF
@@ -309,7 +349,7 @@ function txt2netcdf(input_dir::String, output_dir::String, province::String)
         # Time :
         data[!,1] = Dates.DateTime.(parse.(Int, data[!,1])) # Convert years to Date format
         units = "days since 2000-01-01 00:00:00"
-        timedata = NCDatasets.CFTime.timeencode(data[!,1], "days since 1900-01-01 00:00:00", "standard")    # Encode Dates in days since format
+        timedata = NCDatasets.CFTime.timeencode(data[!,1], "days since 1900-01-01 00:00:00", "standard")  # Encode Dates
         ds["time"][1:nb_obs] = timedata
 
         # Data from table 1 :
@@ -331,13 +371,18 @@ function txt2netcdf(input_dir::String, output_dir::String, province::String)
 end
 
 """
-    netcdf_generator(fileName::String)
+    netcdf_generator(filename::String)
 
-This functions generates empty netCDF files (used by txt2netcdf).
+Generate empty netCDF files of the right format (used internally by txt2netcdf).
+
+# Arguments
+
+- `filename::String` : the name of the file to generate.
+
 """
-function netcdf_generator(fileName::String)
+function netcdf_generator(filename::String)
     # Creation of an empty NetCDF :
-    ds = Dataset(fileName, "c")
+    ds = Dataset(filename, "c")
 
     # Content definition :
     # Dimensions
