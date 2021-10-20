@@ -78,11 +78,11 @@ function data_download(output_dir::String, provinces::Array{String,1};
 
         # Download the data (if not downloaded already) and unzip the data :
         if file in readdir(pwd(), join=true)
-            run(`unzip $(file)`)   # unzip the data
+            InfoZIP.unzip("$(file)")   # unzip the data
         else
             gdown.download(url, file)
             try
-            run(`unzip $(file)`)   # unzip the data
+            InfoZIP.unzip("$(file)")   # unzip the data
             cd("$(output_dir)")
             catch
             throw(error("Unable to unzip the data file."))

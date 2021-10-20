@@ -1,6 +1,6 @@
 module IDFDataCanada
 
-using AxisArrays, CSV, DataFrames, Dates, NCDatasets, PyCall
+using AxisArrays, CSV, DataFrames, Dates, NCDatasets, PyCall, InfoZIP
 
 include("functions.jl")
 
