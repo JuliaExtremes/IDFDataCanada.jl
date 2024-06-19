@@ -181,11 +181,8 @@ This function downloads IDF data from ECCC Google Drive directory for a province
 """
 function data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     # Data version
-    #file_basename = "IDF_v3.10_2020_03_27"
-    file_basename = "IDF_v3.00_2019_02_27"
-    url = "ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/"
-    user = "client_climate"
-    pswd = ""
+    file_basename = "idf_v3-30_2022_10_31"
+    url = "https://collaboration.cmc.ec.gc.ca/cmc/climate/Engineer_Climate/IDF/"*file_basename*"/IDF_Files_Fichiers/"
 
     # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
     # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
