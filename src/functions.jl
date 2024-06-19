@@ -1,5 +1,3 @@
-using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
-using FTPClient
 
 """
     get_idf(fileName::String)
