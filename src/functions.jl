@@ -209,7 +209,7 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
 
         # Download the data (if not downloaded already) and unzip the data :
         if file in glob("*", pwd())
-            run(`unzip $(file)`)   # unzip the data
+            run(`unzip $(file) "*.txt"`)   # unzip the data
         else
             Downloads.download("$(url)$(file)", "$(file)")
             try
