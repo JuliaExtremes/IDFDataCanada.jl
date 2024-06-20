@@ -1,5 +1,3 @@
-using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets
-using FTPClient
 
 """
     get_idf(fileName::String)
@@ -181,26 +179,8 @@ This function downloads IDF data from ECCC Google Drive directory for a province
 """
 function data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
     # Data version
-    #file_basename = "IDF_v3.10_2020_03_27"
-    file_basename = "IDF_v3.00_2019_02_27"
-    url = "ftp.tor.ec.gc.ca/Pub/Engineering_Climate_Dataset/IDF/idf_v3-00_2019_02_27/IDF_Files_Fichiers/"
-    user = "client_climate"
-    pswd = ""
-
-    # Provinces ID keys (for IDF_v3.10_2020_03_27 only)
-    # prov_ID = Dict("YT" => "1GXL_s6c-Rjp23F7YlFAa9hzA5YGeQjJ1",
-    #             "SK" => "1zPrix1Xr7eXMzBbNbPhvwSx0u4vYPhsk",
-    #             "QC" => "1JVa-8KxF9QGtA3vP-mrTJ5y7hkvZT68J",
-    #             "PE" => "1ug-1xzdNq-oPyTpTLxY0uxyKQhW_e90Z",
-    #             "ON" => "15p4AFjVjj92DdQkxeOjRy9bUb52FXw1l",
-    #             "NU" => "1QjViNFBd1G2HwjfiwNUwAqpfw64zx1K0",
-    #             "NT" => "13830mUbofWR5zIsB5w-32G5HOU5507LW",
-    #             "NS" => "1ZVEQv4htlH_EsrMN6ZoXRjuj3GcpU1tZ",
-    #             "NL" => "1CY3HjRLEV5mItUrbBntCR0TznxF51YnQ",
-    #             "NB" => "1obZokf_BMWXkmXcq21S0vWZFInroHg3T",
-    #             "MB" => "1F5w4aQOV-uk-L3Mxfg_BZx1UU_LjHmdV",
-    #             "BC" => "1ZSvDKBs0eAQSeV-ivI1s5YOGtFsasQzu",
-    #             "AB" => "1-K8eM4M5qVvs7PD7UNtC-mlsAZn15WJD")
+    file_version = "idf_v3-30_2022_10_31"
+    url = "https://collaboration.cmc.ec.gc.ca/cmc/climate/Engineer_Climate/IDF/"*file_version*"/IDF_Files_Fichiers/"
 
     if lowercase(format) == "csv"
         info_df = DataFrame(A = String[],   # Name
@@ -225,36 +205,22 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
             cd("$(output_dir)/temp_data")
         end
 
-        file = "$(file_basename)_$(province).zip"
-        #ID = prov_ID[province]
-        #url = "https://drive.google.com/uc?export=download&id=$(ID)&alt=media";
+        file = "$(province).zip"
 
         # Download the data (if not downloaded already) and unzip the data :
         if file in glob("*", pwd())
-            run(`unzip $(file)`)   # unzip the data
+            run(`unzip $(file) "*.txt"`)   # unzip the data
         else
-            ftp_init();
-            ftp = FTP(hostname = url, username = user, password=pswd)
-            dir_content = readdir(ftp);
-            # Check if requested file is in the directory :
-            if file in dir_content
-                download(ftp, file, file)
-                close(ftp)
-                run(`unzip $(file)`)   # unzip the data
+            Downloads.download("$(url)$(file)", "$(file)")
+            try
+                run(`unzip $(file) "*.txt"`)   # unzip the data
                 cd("$(output_dir)")
-            else
-                throw(error("File not found in the specified directory."))
+            catch
+                throw(error("Unable to unzip the data file."))
             end
-            #drive_download(url, pwd());
-            #try
-            #    run(`unzip $(file)`)   # unzip the data
-            #    cd("$(output_dir)")
-            #catch
-            #    throw(error("Unable to unzip the data file."))
-            #end
         end
 
-        input_d = "$(output_dir)/temp_data/$(file_basename)_$(province)" # Where raw data are
+        input_d = "$(output_dir)/temp_data/$(province)" # Where raw data are
         if split
             # Make the output directory if it doesn't exist :
             try
@@ -418,29 +384,4 @@ function netcdf_generator(fileName::String)
     v16.attrib["units"] = "mm"
 
     close(ds)
-end
-
-"""
-    drive_download(url::String, localdir::String)
-
-This function downloads zip files from Google Drive using HTTP.
-"""
-function drive_download(url::String, localdir::String)
-    HTTP.open("GET", url) do stream
-        r = HTTP.startread(stream);
-        content_disp = HTTP.header(r, "Content-Disposition");
-        m = match(r"filename=\\\"(.*)\\\"", content_disp);
-        filename = ""
-        if m !== nothing
-            filename = m.match[11:end-1]
-            println(filename)
-            filepath = joinpath(localdir, filename)
-            #downloaded_bytes = 0
-            Base.open(filepath, "w") do fh
-                while(!eof(stream))
-                    write(fh, readavailable(stream));
-                end
-            end
-        end
-    end
 end

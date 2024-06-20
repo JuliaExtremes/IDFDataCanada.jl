@@ -1,6 +1,6 @@
 module IDFDataCanada
 
-using AxisArrays, CSV, DataFrames, Dates, Glob, HTTP, LibCURL, NCDatasets, FTPClient
+using AxisArrays, CSV, DataFrames, Dates, Downloads, Glob, NCDatasets
 
 include("functions.jl")
 
