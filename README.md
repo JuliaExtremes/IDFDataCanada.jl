@@ -25,21 +25,20 @@ Intensity-Duration-Frequency (IDF) data from Engineering Climate Datasets of Env
 
 *IDFDataCanada* is now a registered package. It can be installed using  Julia's builtin package manager:
 
-```
+```julia
 Pkg> add IDFDataCanada
 ```
 
-
 ### Extract data
 
-The key feature of *IDFDataCanada* is the `data_download` function. It can be used directly by providing an array of province codes (ex: ["QC", "ON"] for Quebec and Ontario, ["QC"] for Quebec only), the output directory (must be an existing folder) and the format (CSV or netCDF). CSV format is selected by default. The two keyword arguments, split and rm_temp, can be set to extract data in a subfolder for each province or to keep the temporarily downloaded zip files.
+The key feature of *IDFDataCanada* is the `data_download` function. It can be used directly by providing the province code (ex: `"QC"` for Quebec), the output directory (must be an existing folder) and the format (`CSV` or `netCDF`). By default, `CSV` format is selected and all provinces will be downloaded if no province code is provided. The two keyword arguments, `split` and `rm_temp`, can be set to extract data in a subfolder for each province or to keep the temporarily downloaded zip files. To download more than one province at the time, an array of province codes can by used (ex: `["QC", "ON"]` for Quebec and Ontario).
 
 ```julia
-using IDFDataCanada
+data_download(output_dir::String, province::String="all", format::String="csv"; split::Bool=false, rm_temp::Bool=true)
 data_download(output_dir::String, provinces::Array{String,N} where N, format::String="csv"; split::Bool=false, rm_temp::Bool=true)
 ```
 
-`data_download` will create output files of the specified format in the output directory.
+`data_download` will create output files of the specified format in the output directory and a CSV a file containing station information named `info_stations.csv`.
 
 
 ### Format
@@ -156,72 +155,15 @@ Let's say someone wants to extract IDF data for Prince Edward Island (PE) in CSV
 
 ```julia
 julia> using IDFDataCanada
-julia> data_download(pwd(),["PE"])
+julia> data_download(pwd(), "PE")
 Archive:  PE.zip
-   creating: PE/
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300301_CHARLOTTETOWN_A_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT).pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT).png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT).txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300418_EAST_POINT_(AUT)_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300516_NORTH_CAPE_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300562_ST._PETERS_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8300596_SUMMERSIDE_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_8305500_MAPLE_PLAINS_t.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS.png  
   inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS.txt  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_qq.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_qq.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_r.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_r.png  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_t.pdf  
-  inflating: PE/idf_v3-30_2022_10_31_830_PE_830P001_HARRINGTON_CDA_CS_t.png  
 CHARLOTTETOWN A
 8300301.csv : OK
 EAST POINT (AUT)
@@ -238,4 +180,4 @@ HARRINGTON CDA CS
 830P001.csv : OK
 ```
 
-Seven CSV files (`8300301.csv`, `8300418.nc`, `8300516.csv`, `8300562.nc`, `8300596.nc`, `8305500.nc` and `830P001.nc`) corresponding to the Prince Edward Island stations and a file with station information (`info_stations.csv`) will be returned in the present working directory.
+Seven CSV files (`8300301.csv`, `8300418.nc`, `8300516.csv`, `8300562.nc`, `8300596.nc`, `8305500.nc` and `830P001.nc`) corresponding to the Prince Edward Island stations and a station information file (`info_stations.csv`) will be returned in the present working directory.
