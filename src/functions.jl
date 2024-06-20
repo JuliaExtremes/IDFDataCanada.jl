@@ -213,7 +213,7 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
         else
             Downloads.download("$(url)$(file)", "$(file)")
             try
-                run(`unzip $(file)`)   # unzip the data
+                run(`unzip $(file) "*.txt"`)   # unzip the data
                 cd("$(output_dir)")
             catch
                 throw(error("Unable to unzip the data file."))
