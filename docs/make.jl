@@ -8,3 +8,7 @@ makedocs(sitename="IDFDataCanada.jl",
        "functions.md"
        ]
     )
+
+deploydocs(
+    repo = "github.com/JuliaExtremes/IDFDataCanada.jl.git",
+)
