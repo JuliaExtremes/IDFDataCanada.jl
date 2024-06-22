@@ -248,8 +248,10 @@ function data_download(output_dir::String, provinces::Array{String,N} where N, f
             rm("$(output_dir)/temp_data", recursive=true)
         end
     end
-    output_info = "$(output_dir)/info_stations.csv"
-    CSV.write(output_info, info_df)
+    if lowercase(format) == "csv"
+        output_info = "$(output_dir)/info_stations.csv"
+        CSV.write(output_info, info_df)
+    end
     return nothing
 end
 
