@@ -11,4 +11,6 @@ makedocs(sitename="IDFDataCanada.jl",
 
 deploydocs(
     repo = "github.com/JuliaExtremes/IDFDataCanada.jl.git",
+    devbranch = "documentation",
+    versions = ["stable" => "v^", "v#.#", "master"]
 )
