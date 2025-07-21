@@ -1,5 +1,5 @@
 # IDFDataCanada.jl 🇨🇦
-[![Project Status: Moved to [CanadianClimateData.jl](https://github.com/JuliaExtremes/CanadianClimateData.jl)](https://www.repostatus.org/badges/latest/moved.svg)](https://www.repostatus.org/#moved) to [CanadianClimateData.jl](https://github.com/JuliaExtremes/CanadianClimateData.jl)
+[![Project Status: Moved to https://github.com/JuliaExtremes/CanadianClimateData.jl – The project has been moved to a new location, and the version at that location should be considered authoritative.](https://www.repostatus.org/badges/latest/moved.svg)](https://www.repostatus.org/#moved) to [CanadianClimateData.jl](https://github.com/JuliaExtremes/CanadianClimateData.jl)
 [![documentation stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliaextremes.github.io/IDFDataCanada.jl/stable/)
 [![documentation latest](https://img.shields.io/badge/docs-latest-blue.svg)](https://juliaextremes.github.io/IDFDataCanada.jl/dev/)
 
